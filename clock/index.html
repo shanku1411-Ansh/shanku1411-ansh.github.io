@@ -1,0 +1,839 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Jungle Clock — Anshu's Game</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&family=Andika:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --jungle:#14532B;
+    --leaf:#2E9E5B;
+    --lime:#7FC241;
+    --bark:#8B5E3C;
+    --sun:#FFC93C;
+    --kesari:#F4772E;
+    --cream:#FFF6E3;
+    --red:#D8363A;
+    --blue:#1B4B8F;
+    --ink:#26221E;
+    --head:'Baloo 2',system-ui,sans-serif;
+    --body:'Andika',system-ui,sans-serif;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; font-family:var(--body); color:var(--ink);
+    background:
+      radial-gradient(circle at 12% 8%, rgba(127,194,65,.30), transparent 45%),
+      radial-gradient(circle at 88% 92%, rgba(255,201,60,.20), transparent 45%),
+      var(--jungle);
+    display:flex; justify-content:center; min-height:100vh;
+    -webkit-tap-highlight-color:transparent;
+  }
+  #app{width:100%; max-width:480px; background:var(--cream);
+    border-left:6px solid var(--lime); border-right:6px solid var(--lime);
+    min-height:100vh; position:relative; overflow:hidden;}
+
+  header{background:linear-gradient(160deg,var(--leaf) 0%,var(--jungle) 100%);
+    text-align:center; padding:14px 10px 16px; color:var(--cream); position:relative;}
+  header .tag{font-size:.7rem; font-weight:800; letter-spacing:3px; color:var(--sun);
+    text-transform:uppercase; font-family:var(--head);}
+  header h1{margin:2px 0 0; font-family:var(--head); font-weight:800; font-size:1.55rem;
+    text-shadow:2px 2px 0 rgba(0,0,0,.35);}
+  .canopy{height:16px; background:
+    radial-gradient(ellipse at 11px -3px, var(--jungle) 11px, transparent 12px);
+    background-size:22px 16px; background-repeat:repeat-x; margin-top:-1px;}
+
+  h2{font-family:var(--head); color:var(--jungle); font-size:1.32rem; margin:10px 0 6px;}
+
+  /* ---------- setup ---------- */
+  #setup{padding:16px 18px 30px; text-align:center;}
+  #setup p{font-size:1.02rem; line-height:1.6; margin:6px 0;}
+  .nameinput{width:100%; padding:14px; font-family:var(--head); font-size:1.2rem; font-weight:800;
+    border:3px solid var(--ink); border-radius:12px; text-align:center; background:#fff; color:var(--ink);}
+  .crowns{display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; margin-top:12px;}
+  .crownbtn{background:#fff; border:3px solid var(--ink); border-radius:12px; padding:6px 2px; cursor:pointer;}
+  .crownbtn.sel{border-color:var(--leaf); background:#EAF7EF; box-shadow:0 0 0 3px rgba(46,158,91,.25);}
+  .crownbtn div{font-family:var(--head); font-weight:800; font-size:.76rem; margin-top:2px;}
+  .crownbtn svg{width:100%; height:52px;}
+
+  /* ---------- menu ---------- */
+  #menu{padding:14px 14px 24px;}
+  .note{font-size:.85rem; font-weight:700; color:var(--jungle); text-align:center; margin:0 0 10px; font-family:var(--head);}
+  .storystrip{background:#fff; border:3px solid var(--jungle); border-radius:14px; padding:10px 12px;
+    display:flex; gap:10px; align-items:center; margin-bottom:12px;}
+  .storystrip svg{width:76px; height:76px; flex:0 0 76px;}
+  .storystrip .t{font-family:var(--head); font-weight:800; color:var(--jungle); font-size:.95rem;}
+  .storystrip .n{font-size:.95rem; line-height:1.45; font-style:italic;}
+
+  #bananabar{background:#fff; border:3px solid var(--sun); border-radius:14px; padding:10px 12px;
+    margin-bottom:12px; text-align:center; font-family:var(--head); font-weight:800;}
+  #bananabar .big{font-size:1.25rem; color:var(--kesari);}
+
+  .friends{background:#fff; border:3px dashed var(--leaf); border-radius:14px; padding:10px;
+    margin-bottom:12px;}
+  .friends h3{font-family:var(--head); color:var(--leaf); margin:0 0 6px; font-size:.98rem; text-align:center;}
+  .friendrow{display:grid; grid-template-columns:repeat(5,1fr); gap:4px;}
+  .friend{text-align:center;}
+  .friend svg{width:100%; height:48px;}
+  .friend div{font-family:var(--head); font-weight:800; font-size:.68rem; color:var(--ink); line-height:1.2;}
+
+  .levelcard{display:flex; align-items:center; gap:12px; background:#fff; border:3px solid var(--ink);
+    border-radius:14px; padding:12px; margin-bottom:10px; cursor:pointer;
+    box-shadow:4px 4px 0 rgba(38,34,30,.22); transition:transform .15s, box-shadow .15s;
+    animation:slideUp .35s ease-out both;}
+  .levelcard:active{transform:translate(2px,2px); box-shadow:2px 2px 0 rgba(38,34,30,.22);}
+  .levelcard.locked{opacity:.45; cursor:default; box-shadow:none;}
+  .levelcard .num{font-family:var(--head); font-weight:800; font-size:1.2rem; background:var(--sun);
+    border:3px solid var(--ink); border-radius:50%; width:48px; height:48px; flex:0 0 48px;
+    display:flex; align-items:center; justify-content:center;}
+  .levelcard.done .num{background:var(--leaf); color:#fff;}
+  .levelcard .info{flex:1;}
+  .levelcard .title{font-family:var(--head); font-weight:800; font-size:1.08rem; color:var(--jungle);}
+  .levelcard .sub{font-size:.8rem; color:#7a736a; font-weight:700;}
+  .levelcard .go{font-size:1.3rem;}
+
+  .whybox{background:#fff; border:3px dashed var(--kesari); border-radius:14px; padding:12px 14px; margin-top:16px;}
+  .whybox h3{font-family:var(--head); color:var(--kesari); margin:0 0 6px; font-size:1rem;}
+  .whybox p{margin:0 0 6px; font-size:.94rem; line-height:1.55;}
+  .resetline{text-align:center; margin-top:14px;}
+  .resetline button{background:none; border:none; color:#9b9186; font-weight:700;
+    font-size:.8rem; text-decoration:underline; cursor:pointer; font-family:var(--body);}
+
+  /* ---------- play ---------- */
+  #play{display:none; padding:10px 16px 30px;}
+  .meta{display:flex; justify-content:space-between; align-items:center; margin:10px 0 2px;
+    font-family:var(--head); font-weight:800; font-size:.85rem; color:var(--leaf); letter-spacing:1px;}
+  #levelname{font-family:var(--head); font-weight:800; font-size:1.4rem; color:var(--jungle); margin:0 0 8px;}
+  #dots{display:flex; gap:6px; margin-bottom:14px;}
+  #dots span{flex:1; height:10px; border-radius:6px; background:#e6dcc4; border:2px solid var(--ink); transition:background .3s;}
+  #dots span.on{background:var(--leaf);}
+  #dots span.now{background:var(--sun); animation:pulse 1.6s ease-in-out infinite;}
+  #qarea{animation:fadeIn .3s ease-out both;}
+  .qgrid{display:block;}
+  .scene{display:flex; align-items:center; gap:10px; margin-bottom:6px;}
+  .scene .art{width:62px; flex:0 0 62px;}
+  .scene .art svg{width:100%; height:62px;}
+  .qtext{font-size:1.22rem; line-height:1.6; font-weight:700; margin:0;}
+  .clockwrap{display:flex; justify-content:center; margin:8px 0 12px; position:relative;}
+  .digital{text-align:center; font-family:var(--head); font-weight:800; font-size:2rem; color:var(--ink);
+    background:var(--sun); border:3px solid var(--ink); border-radius:12px; padding:4px 0;
+    margin:0 auto 12px; max-width:200px; letter-spacing:2px;}
+  .opts{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:10px;}
+  .opt{border:3px solid var(--ink); border-radius:12px; padding:16px 6px; background:#fff;
+    font-family:var(--head); font-weight:800; font-size:1.14rem; cursor:pointer;
+    box-shadow:0 4px 0 rgba(38,34,30,.3); color:var(--ink); transition:transform .12s, background .2s;}
+  .opt:active{transform:translateY(3px); box-shadow:0 1px 0 rgba(38,34,30,.3);}
+  .opt:focus-visible{outline:4px solid var(--jungle); outline-offset:2px;}
+  .opt.right{background:var(--leaf); color:#fff; animation:pop .4s ease-out;}
+  .opt.wrong{background:var(--red); color:#fff; animation:shake .4s ease-out;}
+  .feedback{text-align:center; font-family:var(--head); font-weight:800; font-size:1.12rem;
+    margin:14px 0 0; min-height:28px; line-height:1.5;}
+  .feedback.good{color:var(--leaf); animation:pop .4s ease-out;}
+  .feedback.again{color:var(--red);}
+  .hindiword{color:var(--kesari);}
+
+  .btn{display:block; width:100%; border:3px solid var(--ink); border-radius:12px; padding:14px;
+    font-family:var(--head); font-size:1.08rem; font-weight:800; cursor:pointer;
+    background:var(--sun); color:var(--ink); box-shadow:0 4px 0 rgba(38,34,30,.35); margin-top:14px;}
+  .btn:active{transform:translateY(3px); box-shadow:0 1px 0 rgba(38,34,30,.35);}
+  .btn:focus-visible{outline:4px solid var(--jungle); outline-offset:2px;}
+  .btn.green{background:var(--leaf); color:#fff;}
+  .btn.plain{background:#fff;}
+
+  /* ---------- monkey pop-up ---------- */
+  #modal{display:none; position:fixed; inset:0; z-index:60; background:rgba(20,83,43,.66);
+    padding:14px; align-items:center; justify-content:center;}
+  #modal.show{display:flex; animation:fadeIn .2s ease-out;}
+  .mcard{background:var(--cream); border:5px solid var(--jungle); border-radius:20px; max-width:430px;
+    width:100%; padding:14px; box-shadow:0 12px 0 rgba(0,0,0,.3);
+    animation:swingIn .5s cubic-bezier(.3,1.5,.5,1) both; max-height:94vh; overflow-y:auto;}
+  .mtop{display:flex; gap:10px; align-items:flex-start;}
+  .mtop .art{width:96px; flex:0 0 96px;}
+  .mtop .art svg{width:100%; height:96px; animation:wiggle 1.6s ease-in-out infinite;}
+  .mwho{font-family:var(--head); font-weight:800; font-size:.82rem; color:var(--jungle);
+    letter-spacing:1px; text-transform:uppercase;}
+  .msay{background:#fff; border:3px solid var(--kesari); border-radius:14px; padding:9px 11px; margin-top:4px;}
+  .msay .en{font-weight:700; font-size:1.05rem; line-height:1.5; font-style:italic;}
+  .mcheck{background:#fff; border:3px solid var(--leaf); border-radius:14px; padding:9px 11px; margin-top:10px;}
+  .mcheck .who{font-family:var(--head); font-weight:800; font-size:.8rem; color:var(--leaf);
+    letter-spacing:1px; text-transform:uppercase;}
+  .mcheck .en{font-weight:700; font-size:1.05rem; line-height:1.5;}
+
+  /* ---------- clock: plain on purpose ---------- */
+  svg.clock{width:100%; max-width:290px; height:auto; touch-action:manipulation;}
+  .face2{fill:#fff; stroke:var(--ink); stroke-width:5;}
+  .rim{fill:none; stroke:var(--sun); stroke-width:8;}
+  .tick{stroke:var(--ink); stroke-width:2;}
+  .tick5{stroke:var(--ink); stroke-width:4;}
+  .numtxt{font-family:var(--head); font-weight:800; font-size:16px; fill:var(--ink);
+    text-anchor:middle; dominant-baseline:central;}
+  .minlabel{font-family:var(--body); font-weight:700; font-size:10px; fill:var(--kesari);
+    text-anchor:middle; dominant-baseline:central;}
+  .hourhand{stroke:var(--blue); stroke-width:11; stroke-linecap:round;}
+  .minhand{stroke:var(--red); stroke-width:6; stroke-linecap:round;}
+  .pivot{fill:var(--ink);}
+  .ghost{stroke:#c9bfa8; stroke-width:5; stroke-dasharray:6 6;}
+  .hit{fill:transparent; cursor:pointer;}
+  .hit.flashgood{fill:rgba(46,158,91,.45);}
+  .hit.flashbad{fill:rgba(216,54,58,.4);}
+  .sweep{transform-origin:110px 110px; animation:sweep .85s cubic-bezier(.25,.9,.3,1) both;}
+  .sweep.slow{animation-duration:1.15s;}
+  @keyframes sweep{from{transform:rotate(0deg);}to{transform:rotate(var(--a));}}
+
+  .flyban{position:absolute; font-size:2rem; pointer-events:none; z-index:40; animation:fly 1s ease-out forwards;}
+
+  /* ---------- score ---------- */
+  #score{display:none; padding:20px 18px 30px; text-align:center;}
+  #bananas{font-size:1.9rem; margin:6px 0; line-height:1.5; word-break:break-word;}
+  #bananas span{display:inline-block; animation:drop .6s ease-out both;}
+  #scoretext{font-size:1.05rem; line-height:1.65; font-weight:700;}
+  #monkeysays{margin-top:14px; text-align:left;}
+
+  footer{font-size:.68rem; text-align:center; color:var(--cream); font-weight:800; padding:10px;
+    letter-spacing:2px; background:var(--jungle); font-family:var(--head);}
+
+  @keyframes fadeIn{from{opacity:0;}to{opacity:1;}}
+  @keyframes slideUp{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:none;}}
+  @keyframes pop{0%{transform:scale(1);}45%{transform:scale(1.09);}100%{transform:scale(1);}}
+  @keyframes shake{0%,100%{transform:translateX(0);}25%{transform:translateX(-6px);}
+                   50%{transform:translateX(6px);}75%{transform:translateX(-3px);}}
+  @keyframes pulse{0%,100%{opacity:1;}50%{opacity:.45;}}
+  @keyframes wiggle{0%,100%{transform:rotate(-5deg);}50%{transform:rotate(5deg);}}
+  @keyframes swingIn{0%{transform:translateY(-120%) rotate(-8deg);opacity:0;}
+                     100%{transform:translateY(0) rotate(0);opacity:1;}}
+  @keyframes fly{0%{transform:translate(0,0) scale(.6);opacity:1;}
+                 100%{transform:translate(var(--dx),-120px) scale(1.3);opacity:0;}}
+  @keyframes drop{from{transform:translateY(-40px);opacity:0;}to{transform:none;opacity:1;}}
+
+  @media (min-width:760px){
+    body{align-items:flex-start;}
+    #app{max-width:920px; border-left-width:10px; border-right-width:10px;}
+    header h1{font-size:2rem;}
+    #menu{padding:20px 28px 30px; display:grid; grid-template-columns:1fr 1fr; gap:0 18px; align-items:start;}
+    .note,.storystrip,#bananabar,.friends{grid-column:1 / -1;}
+    .whybox{grid-column:2; margin-top:0;}
+    .resetline{grid-column:1 / -1;}
+    #play{padding:14px 28px 40px;}
+    #levelname{font-size:1.75rem;}
+    .qgrid{display:grid; grid-template-columns:320px 1fr; gap:28px; align-items:center;}
+    .qgrid .clockwrap{margin:0;}
+    svg.clock{max-width:320px;}
+    .qtext{font-size:1.4rem;}
+    .opt{font-size:1.18rem; padding:18px 8px;}
+    #setup{max-width:520px; margin:0 auto;}
+  }
+  @media (prefers-reduced-motion:reduce){
+    *{animation:none !important; transition:none !important;}
+    .sweep{transform:rotate(var(--a));}
+  }
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <div class="tag">★ The Jungle Clock ★</div>
+    <h1>🌿 Anshu's Clock Game 🍌</h1>
+  </header>
+  <div class="canopy"></div>
+
+  <div id="setup"></div>
+  <div id="menu" style="display:none"></div>
+
+  <div id="play">
+    <button class="btn plain" onclick="goMenu()">◀ Back to all levels</button>
+    <div class="meta"><span id="levelno"></span><span id="qcount"></span></div>
+    <div id="levelname"></div>
+    <div id="dots"></div>
+    <div id="qarea"></div>
+    <div class="feedback" id="feedback"></div>
+    <button class="btn green" id="nextbtn" style="display:none" onclick="nextQuestion()">Next ▶</button>
+  </div>
+
+  <div id="score">
+    <div id="bananas"></div>
+    <h2 id="scorehead"></h2>
+    <div id="scoretext"></div>
+    <div id="monkeysays"></div>
+    <button class="btn green" onclick="goMenu()">Back to all levels</button>
+    <button class="btn plain" onclick="replayLevel()">Play this level again</button>
+  </div>
+
+  <footer>MADE WITH PAPA ★ THE JUNGLE CLOCK</footer>
+</div>
+
+<div id="modal" role="dialog" aria-modal="true">
+  <div class="mcard">
+    <div class="mtop">
+      <div class="art" id="mart"></div>
+      <div style="flex:1">
+        <div class="mwho" id="mwho"></div>
+        <div class="msay"><div class="en" id="men"></div></div>
+      </div>
+    </div>
+    <div class="mcheck">
+      <div class="who">Is he right? Check!</div>
+      <div class="en" id="mchecken"></div>
+    </div>
+    <button class="btn green" id="mclose" onclick="closeModal()">I will check myself! ✋</button>
+  </div>
+</div>
+
+<script>
+/* =========================================================
+   SAVED PROGRESS
+   ========================================================= */
+const KEY='jungle_clock_v6';
+let S={name:'', crown:'leaf', unlocked:1, best:{}};
+function save(){ try{ localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){} }
+function load(){ try{ const r=localStorage.getItem(KEY); if(r) S=Object.assign(S, JSON.parse(r)); }catch(e){} }
+
+/* =========================================================
+   ARTWORK — the jungle cast
+   ========================================================= */
+function crownArt(kind){
+  if(kind==='mango')
+    return '<ellipse cx="70" cy="22" rx="19" ry="14" fill="#F4772E" stroke="#26221E" stroke-width="3"/>'+
+           '<path d="M70 10 q10 -8 18 -4 q-6 8 -16 8Z" fill="#2E9E5B" stroke="#26221E" stroke-width="2.5"/>';
+  if(kind==='marigold')
+    return '<g stroke="#26221E" stroke-width="2.5">'+
+           '<circle cx="52" cy="24" r="9" fill="#F4772E"/><circle cx="70" cy="18" r="10" fill="#FFC93C"/>'+
+           '<circle cx="88" cy="24" r="9" fill="#F4772E"/><circle cx="70" cy="30" r="8" fill="#FFC93C"/></g>';
+  return '<g stroke="#26221E" stroke-width="3">'+
+         '<path d="M68 34 C 48 12, 26 18, 30 36 C 44 46, 60 44, 68 34Z" fill="#2E9E5B"/>'+
+         '<path d="M72 34 C 92 12, 114 18, 110 36 C 96 46, 80 44, 72 34Z" fill="#14532B"/></g>'+
+         '<path d="M34 36 L66 34 M106 36 L74 34" stroke="#0f4f2b" stroke-width="2" fill="none"/>';
+}
+function monkeyArt(mood, crown){
+  const c=crown||S.crown;
+  let eyes,mouth,brow;
+  if(mood==='sad'){
+    eyes='<circle cx="56" cy="72" r="7" fill="#fff" stroke="#26221E" stroke-width="2.5"/>'+
+         '<circle cx="84" cy="72" r="7" fill="#fff" stroke="#26221E" stroke-width="2.5"/>'+
+         '<circle cx="56" cy="74" r="3.2" fill="#26221E"/><circle cx="84" cy="74" r="3.2" fill="#26221E"/>';
+    brow='<path d="M48 62 L64 66 M92 62 L76 66" stroke="#26221E" stroke-width="3.5" fill="none" stroke-linecap="round"/>';
+    mouth='<path d="M58 102 q12 -9 24 0" stroke="#26221E" stroke-width="3.5" fill="none" stroke-linecap="round"/>';
+  } else {
+    eyes='<path d="M49 73 q7 -9 14 0" stroke="#26221E" stroke-width="3.5" fill="none" stroke-linecap="round"/>'+
+         '<path d="M77 73 q7 -9 14 0" stroke="#26221E" stroke-width="3.5" fill="none" stroke-linecap="round"/>';
+    brow='<path d="M47 61 q8 -6 17 -2 M93 61 q-8 -6 -17 -2" stroke="#26221E" stroke-width="3.5" fill="none" stroke-linecap="round"/>';
+    mouth='<path d="M56 96 q14 12 28 -2" stroke="#26221E" stroke-width="3.5" fill="none" stroke-linecap="round"/>';
+  }
+  return '<svg viewBox="0 0 140 130" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="the monkey king">'+
+    crownArt(c)+
+    '<circle cx="24" cy="72" r="15" fill="#A97142" stroke="#26221E" stroke-width="3.5"/><circle cx="24" cy="72" r="7" fill="#E8C39E"/>'+
+    '<circle cx="116" cy="72" r="15" fill="#A97142" stroke="#26221E" stroke-width="3.5"/><circle cx="116" cy="72" r="7" fill="#E8C39E"/>'+
+    '<ellipse cx="70" cy="76" rx="42" ry="39" fill="#A97142" stroke="#26221E" stroke-width="4"/>'+
+    '<ellipse cx="70" cy="94" rx="27" ry="20" fill="#E8C39E" stroke="#26221E" stroke-width="3"/>'+
+    '<ellipse cx="62" cy="88" rx="2.6" ry="3.4" fill="#26221E"/><ellipse cx="78" cy="88" rx="2.6" ry="3.4" fill="#26221E"/>'+
+    brow+eyes+mouth+'</svg>';
+}
+const EYES='<circle cx="40" cy="46" r="6" fill="#fff" stroke="#26221E" stroke-width="2.5"/>'+
+           '<circle cx="64" cy="46" r="6" fill="#fff" stroke="#26221E" stroke-width="2.5"/>'+
+           '<circle cx="41" cy="47" r="2.8" fill="#26221E"/><circle cx="65" cy="47" r="2.8" fill="#26221E"/>';
+function animalArt(kind){
+  const open='<svg viewBox="0 0 104 104" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="'+kind+'">';
+  if(kind==='squirrel')
+    return open+
+      '<path d="M84 78 C102 62, 96 26, 74 22 C88 40, 86 62, 74 74Z" fill="#D98B45" stroke="#26221E" stroke-width="3.5"/>'+
+      '<path d="M26 30 L20 10 L38 20Z" fill="#C97B35" stroke="#26221E" stroke-width="3"/>'+
+      '<path d="M70 30 L76 10 L58 20Z" fill="#C97B35" stroke="#26221E" stroke-width="3"/>'+
+      '<circle cx="52" cy="50" r="30" fill="#E09B55" stroke="#26221E" stroke-width="4"/>'+
+      '<ellipse cx="52" cy="64" rx="15" ry="11" fill="#FFE6C4" stroke="#26221E" stroke-width="2.5"/>'+
+      EYES+'<ellipse cx="52" cy="58" rx="4" ry="3" fill="#26221E"/></svg>';
+  if(kind==='parrot')
+    return open+
+      '<path d="M40 20 q6 -14 16 -12 q-2 10 -6 14Z" fill="#D8363A" stroke="#26221E" stroke-width="3"/>'+
+      '<circle cx="52" cy="50" r="30" fill="#2E9E5B" stroke="#26221E" stroke-width="4"/>'+
+      '<path d="M74 48 q16 6 4 20 q-10 4 -14 -8Z" fill="#F4772E" stroke="#26221E" stroke-width="3.5"/>'+
+      EYES+'</svg>';
+  if(kind==='elephant')
+    return open+
+      '<ellipse cx="16" cy="46" rx="15" ry="22" fill="#9AA5AD" stroke="#26221E" stroke-width="3.5"/>'+
+      '<ellipse cx="88" cy="46" rx="15" ry="22" fill="#9AA5AD" stroke="#26221E" stroke-width="3.5"/>'+
+      '<circle cx="52" cy="48" r="29" fill="#B4BEC6" stroke="#26221E" stroke-width="4"/>'+
+      '<path d="M52 62 q-4 18 6 26 q10 6 12 -6" fill="none" stroke="#26221E" stroke-width="9" stroke-linecap="round"/>'+
+      '<path d="M52 62 q-4 18 6 26 q10 6 12 -6" fill="none" stroke="#B4BEC6" stroke-width="5" stroke-linecap="round"/>'+
+      EYES+'</svg>';
+  if(kind==='deer')
+    return open+
+      '<path d="M32 24 L24 6 M32 16 L18 14 M72 24 L80 6 M72 16 L86 14" stroke="#8B5E3C" stroke-width="4" fill="none" stroke-linecap="round"/>'+
+      '<ellipse cx="24" cy="40" rx="10" ry="7" fill="#C89A6B" stroke="#26221E" stroke-width="3"/>'+
+      '<ellipse cx="80" cy="40" rx="10" ry="7" fill="#C89A6B" stroke="#26221E" stroke-width="3"/>'+
+      '<ellipse cx="52" cy="52" rx="26" ry="30" fill="#D6A97A" stroke="#26221E" stroke-width="4"/>'+
+      EYES+'<ellipse cx="52" cy="72" rx="9" ry="7" fill="#5C4432" stroke="#26221E" stroke-width="2.5"/></svg>';
+  /* tortoise */
+  return open+
+    '<path d="M16 74 q36 -44 72 0Z" fill="#2E9E5B" stroke="#26221E" stroke-width="4"/>'+
+    '<path d="M40 52 q12 -8 24 0 M52 44 v26" stroke="#14532B" stroke-width="3" fill="none"/>'+
+    '<circle cx="52" cy="34" r="17" fill="#7FC241" stroke="#26221E" stroke-width="3.5"/>'+
+    '<circle cx="46" cy="32" r="4.5" fill="#fff" stroke="#26221E" stroke-width="2"/>'+
+    '<circle cx="58" cy="32" r="4.5" fill="#fff" stroke="#26221E" stroke-width="2"/>'+
+    '<circle cx="46.5" cy="33" r="2.1" fill="#26221E"/><circle cx="58.5" cy="33" r="2.1" fill="#26221E"/></svg>';
+}
+
+/* =========================================================
+   TIME WORDS — English, with the Hindi he already speaks
+   ========================================================= */
+const HN=['','एक','दो','तीन','चार','पाँच','छह','सात','आठ','नौ','दस','ग्यारह','बारह'];
+function engTime(h,m){
+  if(m===0)  return h+" o'clock";
+  if(m===30) return "half past "+h;
+  if(m===15) return "quarter past "+h;
+  if(m===45) return "quarter to "+(h===12?1:h+1);
+  return h+":"+String(m).padStart(2,'0');
+}
+function hinTime(h,m){
+  if(m===0)  return HN[h]+' बजे';
+  if(m===15) return 'सवा '+HN[h];
+  if(m===30){ if(h===1) return 'डेढ़ बजे'; if(h===2) return 'ढाई बजे'; return 'साढ़े '+HN[h]; }
+  if(m===45){ const n=(h===12)?1:h+1; return 'पौने '+HN[n]; }
+  return '';
+}
+function digital(h,m){ return h+':'+String(m).padStart(2,'0'); }
+function nextHour(h){ return h===12?1:h+1; }
+function mName(){ return S.name || 'The Monkey King'; }
+
+/* ======================= CLOCK ======================= */
+function polar(cx,cy,r,deg){ const a=(deg-90)*Math.PI/180; return [cx+r*Math.cos(a), cy+r*Math.sin(a)]; }
+function sweepHand(C,len,deg,cls,slow){
+  return '<line class="'+cls+' sweep'+(slow?' slow':'')+'" style="--a:'+deg+'deg" x1="'+C+'" y1="'+C+
+         '" x2="'+C+'" y2="'+(C-len).toFixed(1)+'"/>';
+}
+function clockSVG(o){
+  const C=110,R=96;
+  let s='<svg class="clock" viewBox="0 0 220 220" xmlns="http://www.w3.org/2000/svg" role="img">';
+  s+='<circle class="face2" cx="110" cy="110" r="'+R+'"/><circle class="rim" cx="110" cy="110" r="'+(R-8)+'"/>';
+  for(let i=0;i<60;i++){
+    const big=(i%5===0),p1=polar(C,C,R-10,i*6),p2=polar(C,C,R-(big?20:15),i*6);
+    s+='<line class="'+(big?'tick5':'tick')+'" x1="'+p1[0].toFixed(1)+'" y1="'+p1[1].toFixed(1)+
+       '" x2="'+p2[0].toFixed(1)+'" y2="'+p2[1].toFixed(1)+'"/>';
+  }
+  for(let n=1;n<=12;n++){
+    const p=polar(C,C,R-33,n*30);
+    s+='<text class="numtxt" x="'+p[0].toFixed(1)+'" y="'+p[1].toFixed(1)+'">'+n+'</text>';
+    if(o.minuteLabels){
+      const q=polar(C,C,R-53,n*30);
+      s+='<text class="minlabel" x="'+q[0].toFixed(1)+'" y="'+q[1].toFixed(1)+'">'+(n*5===60?0:n*5)+'</text>';
+    }
+  }
+  if(o.ghostHour)   s+='<line class="ghost" x1="110" y1="110" x2="110" y2="62"/>';
+  if(o.ghostMinute) s+='<line class="ghost" x1="110" y1="110" x2="110" y2="35"/>';
+  if(o.showMinute) s+=sweepHand(C,R*0.78,o.m*6,'minhand',false);
+  if(o.showHour)   s+=sweepHand(C,R*0.50,(o.h%12)*30+o.m*0.5,'hourhand',true);
+  s+='<circle class="pivot" cx="110" cy="110" r="6"/>';
+  if(o.tapHands){
+    if(o.showMinute){ const p=polar(C,C,R*0.62,o.m*6);
+      s+='<circle class="hit" data-part="minute" cx="'+p[0].toFixed(1)+'" cy="'+p[1].toFixed(1)+'" r="23"/>'; }
+    if(o.showHour){ const p=polar(C,C,R*0.34,(o.h%12)*30+o.m*0.5);
+      s+='<circle class="hit" data-part="hour" cx="'+p[0].toFixed(1)+'" cy="'+p[1].toFixed(1)+'" r="21"/>'; }
+  }
+  if(o.tapNumbers) for(let n=1;n<=12;n++){ const p=polar(C,C,R-33,n*30);
+    s+='<circle class="hit" data-num="'+n+'" cx="'+p[0].toFixed(1)+'" cy="'+p[1].toFixed(1)+'" r="20"/>'; }
+  return s+'</svg>';
+}
+
+/* ======================= THE CAST ======================= */
+const CAST=[
+ {id:'squirrel', name:'Pinku'},
+ {id:'deer',     name:'Tara'},
+ {id:'parrot',   name:'Meera'},
+ {id:'elephant', name:'Gopal'},
+ {id:'tortoise', name:'Chintu'}
+];
+const SCENES=[
+ {a:'squirrel', line:'Pinku the squirrel leaves for school at'},
+ {a:'deer',     line:'Tara the deer goes cycling at'},
+ {a:'parrot',   line:'Meera the parrot reads her book at'},
+ {a:'elephant', line:'Gopal the elephant plays football at'},
+ {a:'tortoise', line:'Chintu the tortoise starts walking home at'},
+ {a:'squirrel', line:'Pinku eats his tiffin at'},
+ {a:'parrot',   line:'Meera goes to sleep at'}
+];
+
+const LEVELS=[
+ {n:1,name:'Meet the Clock',       sub:'Two hands, twelve numbers'},
+ {n:2,name:'The Short Hand',       sub:'The hour, all by itself'},
+ {n:3,name:'The Long Hand',        sub:'Count in fives'},
+ {n:4,name:"Both Hands · O'clock", sub:'Long hand at 12'},
+ {n:5,name:'Half Past',            sub:'Long hand at 6'},
+ {n:6,name:'Quarter Past & To',    sub:'Long hand at 3 and at 9'},
+ {n:7,name:'Make the Clock',       sub:'You put the hands'},
+ {n:8,name:'Jungle Day Problems',  sub:'Think and answer'}
+];
+
+const L1=[
+ {h:2,m:0,ask:'part',want:'hour',text:'Tap the SHORT hand. It shows the hour.',
+  monkey:'Obviously the BIG hand is the hour hand! Bigger thing, bigger job. I am the king, I know everything.',
+  check:'Bigger is not the hour. The SHORT fat hand is the hour hand.'},
+ {h:2,m:0,ask:'part',want:'minute',text:'Tap the LONG hand. It shows the minutes.',
+  monkey:'The small one must be the minutes. Small hand, small minutes! Simple.',
+  check:'The LONG thin hand counts the minutes. It reaches the numbers.'},
+ {h:5,m:0,ask:'num',want:7,text:'Tap the number 7.',
+  monkey:'Seven? That is at the top somewhere. Near 12, I think. Probably. Definitely.',
+  check:'Start at 12 and count the way the hands move: 1, 2, 3… down the right side.'},
+ {h:8,m:0,ask:'part',want:'hour',text:'Tap the SHORT hand again.',
+  monkey:'I already told you. The long red one. A king is never wrong twice.',
+  check:'The short one is blue and does not reach the numbers.'},
+ {h:8,m:0,ask:'num',want:11,text:'Tap the number 11.',
+  monkey:'Eleven comes right after 12, of course. Just next to it on the right.',
+  check:'11 comes just BEFORE 12, on the left side.'},
+ {h:10,m:0,ask:'part',want:'minute',text:'Tap the LONG hand again.',
+  monkey:'Bah. Hands, hands, hands. Where are my bananas?',
+  check:'The long hand is pointing straight up at 12 right now.'}
+];
+const L2=[{h:3,m:0},{h:7,m:0},{h:4,m:20},{h:9,m:40},{h:11,m:25},{h:1,m:50},{h:6,m:35}];
+const L3=[5,15,30,45,20,40,25];
+const L4=[[9,0],[5,0],[7,0],[6,0],[12,0],[8,0]];
+const L5=[[4,30],[8,30],[6,30],[11,30],[1,30],[2,30]];
+const L6=[[3,15],[7,15],[5,45],[10,45],[12,15],[8,45]];
+const L7=[[2,0],[6,30],[9,15],[4,45],[7,0],[11,30]];
+const L8=[
+ {text:"School starts at 9 o'clock. Pinku takes 1 hour to walk there. What time must he leave home?",
+  opts:["7 o'clock","8 o'clock","9 o'clock","10 o'clock"],ans:1,art:'squirrel',
+  monkey:"Nine and one! Add them! Ten o'clock! Adding is always the answer.",
+  check:'He must REACH at 9. So he leaves earlier. Count backwards from 9: 8.'},
+ {text:"Tara starts cycling at 4 o'clock. She cycles for 2 hours. What time does she stop?",
+  opts:["5 o'clock","6 o'clock","7 o'clock","2 o'clock"],ans:1,art:'deer',
+  monkey:"Take away 2 from 4. Two o'clock. I am very good at taking things away.",
+  check:'She cycles AFTER 4, so time goes forward. Count on: 5, 6.'},
+ {text:"Meera reads from 7 o'clock to 9 o'clock. How many hours does she read?",
+  opts:["1 hour","2 hours","3 hours","9 hours"],ans:1,art:'parrot',
+  monkey:'Seven and nine. That is a lot of reading. Nine hours! Big books need big numbers.',
+  check:'Count from 7: 8 is one, 9 is two.'},
+ {text:"Gopal's football starts at 5 o'clock. Right now the clock shows 3 o'clock. How long must he wait?",
+  opts:["1 hour","2 hours","3 hours","5 hours"],ans:1,art:'elephant',
+  monkey:'Five o\'clock, so five hours of waiting. Very sad. Eat a banana while you wait.',
+  check:'Count from 3 up to 5: 4 is one, 5 is two.'},
+ {text:"Chintu is slow. He must reach the pond by 11 o'clock, and walking takes him 3 hours. What time must he start?",
+  opts:["6 o'clock","7 o'clock","8 o'clock","2 o'clock"],ans:2,art:'tortoise',
+  monkey:'A tortoise? He will never make it. Say 2 o\'clock, poor fellow should start yesterday.',
+  check:'He must REACH by 11. Go back 3 hours: 10, 9, 8.'}
+];
+
+/* ======================= QUESTIONS ======================= */
+let cur=null;
+const shuffle=a=>{const b=a.slice();for(let i=b.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[b[i],b[j]]=[b[j],b[i]];}return b;};
+function buildQuestions(lv){
+  if(lv===1) return L1.map(q=>Object.assign({kind:'tap'},q));
+  if(lv===2) return L2.map(t=>{
+    const h=t.h,m=t.m,right=String(h);
+    const wrongs=[String(nextHour(h))].concat(
+      shuffle([1,2,3,4,5,6,7,8,9,10,11,12].filter(x=>x!==h&&x!==nextHour(h))).slice(0,2).map(String));
+    const opts=shuffle([right].concat(wrongs));
+    return {kind:'hour',h:h,m:m,opts:opts,ans:opts.indexOf(right),
+      text:'Only the short hand is here. Which hour is it?',
+      after:m===0?('It sits right on '+h+'.'):('It passed '+h+' but has not reached '+nextHour(h)+'. So the hour is '+h+'.'),
+      monkey:m===0?'It is touching a number, so obviously the answer is the NEXT one along. Numbers go forward!'
+                  :'Look, it is almost at '+nextHour(h)+'! So it is '+nextHour(h)+" o'clock. Almost there is the same as there.",
+      check:m===0?'It points straight AT a number. That number is the hour.'
+                 :'Almost is not the same. Has it PASSED '+nextHour(h)+'? No. Take the number it has already passed.'};
+  });
+  if(lv===3) return L3.map(m=>{
+    const right=m+' minutes',num=m/5;
+    const opts=shuffle([right].concat(
+      shuffle([5,10,15,20,25,30,35,40,45,50,55].filter(x=>x!==m)).slice(0,3).map(x=>x+' minutes')));
+    return {kind:'mins',h:0,m:m,minuteLabels:true,opts:opts,ans:opts.indexOf(right),
+      text:'Only the long hand is here. How many minutes?',
+      after:'Count in fives from 12: 5, 10, 15 …',
+      monkey:'It is on number '+num+', so '+num+' minutes! Read the number, say the number. Easy.',
+      check:'Each number is FIVE minutes, not one. You know the 5 table — count 5, 10, 15…'};
+  });
+  if(lv===4||lv===5||lv===6){
+    const src=lv===4?L4:lv===5?L5:L6;
+    return src.map((t,i)=>{
+      const sc=SCENES[i%SCENES.length],h=t[0],m=t[1],right=engTime(h,m);
+      const opts=shuffle([right].concat(makeWrongTimes(h,m)));
+      return {kind:'read',h:h,m:m,art:sc.a,opts:opts,ans:opts.indexOf(right),
+        text:sc.line+' what time?',
+        after:right, afterHi:hinTime(h,m),
+        monkey:m!==0?'The short hand is nearly at '+nextHour(h)+'. So '+engTime(nextHour(h),m)+'. Round it up, always round up!'
+              :(h===12?'Both hands are hiding behind each other at the top! When that happens the clock is asleep. No time at all!'
+                      :"The long hand is on 12, so it is 12 o'clock! The long hand is longer, so the long hand wins."),
+        check:m===0?'The long hand at 12 only means "o\'clock". The SHORT hand tells you which hour.'
+                   :'The short hand is between '+h+' and '+nextHour(h)+'. Take '+h+' — the one it has already passed.'};
+    });
+  }
+  if(lv===7) return L7.map(t=>({kind:'make',h:t[0],m:t[1],step:0}));
+  if(lv===8) return L8.map(q=>{
+    const right=q.opts[q.ans],opts=shuffle(q.opts);
+    return Object.assign({},q,{kind:'word',opts:opts,ans:opts.indexOf(right)});
+  });
+}
+function makeWrongTimes(h,m){
+  const out=[],me=engTime(h,m);
+  const add=(a,b)=>{const t=engTime(a,b); if(t!==me&&out.indexOf(t)<0) out.push(t);};
+  add(nextHour(h),m); add(h===1?12:h-1,m);
+  if(m===0) add(h,30); else if(m===30) add(h,0); else if(m===15) add(h,45); else add(h,15);
+  while(out.length<3) add(((h+4)%12)||12,m);
+  return out.slice(0,3);
+}
+
+/* ======================= SETUP ======================= */
+let pickedCrown='leaf';
+function renderSetup(){
+  document.getElementById('setup').innerHTML=
+    '<div style="max-width:200px;margin:0 auto">'+monkeyArt('smug',pickedCrown)+'</div>'+
+    '<h2>A monkey rules this jungle.</h2>'+
+    '<p>He says nobody in the jungle can read a clock. He has a big pile of bananas and will not share even one.</p>'+
+    '<p>Pinku, Tara, Meera, Gopal and Chintu need you. Win his bananas!</p>'+
+    '<h2 style="margin-top:18px">What is his name?</h2>'+
+    '<input class="nameinput" id="nameinput" maxlength="18" placeholder="Anshu decides…" value="'+(S.name||'')+'">'+
+    '<h2 style="margin-top:18px">Choose his crown</h2>'+
+    '<div class="crowns">'+crownBtn('leaf','Banana leaf')+crownBtn('mango','Mango')+crownBtn('marigold','Marigold')+'</div>'+
+    '<button class="btn green" onclick="finishSetup()">Enter the jungle ▶</button>';
+}
+function crownBtn(kind,label){
+  return '<div class="crownbtn'+(pickedCrown===kind?' sel':'')+'" onclick="pickCrown(\''+kind+'\')">'+
+         '<svg viewBox="0 20 140 40" xmlns="http://www.w3.org/2000/svg">'+crownArt(kind)+'</svg>'+
+         '<div>'+label+'</div></div>';
+}
+function pickCrown(k){
+  const inp=document.getElementById('nameinput');
+  if(inp) S.name=inp.value.trim();
+  pickedCrown=k; renderSetup();
+}
+function finishSetup(){
+  S.name=document.getElementById('nameinput').value.trim();
+  S.crown=pickedCrown; save();
+  document.getElementById('setup').style.display='none';
+  goMenu();
+}
+
+/* ======================= MENU ======================= */
+function totalBananas(){ let t=0; for(const k in S.best) t+=S.best[k]; return t; }
+function renderMenu(){
+  let s='<div class="storystrip">'+monkeyArt('smug')+
+    '<div><div class="t">'+mName()+' says:</div>'+
+    '<div class="n">"Nobody in my jungle can read a clock. Nobody!"</div></div></div>'+
+    '<div id="bananabar"><div class="big">🍌 Bananas won: '+totalBananas()+'</div></div>'+
+    '<div class="friends"><h3>Your jungle friends</h3><div class="friendrow">'+
+    CAST.map(c=>'<div class="friend">'+animalArt(c.id)+'<div>'+c.name+'</div></div>').join('')+
+    '</div></div><p class="note">Finish a level to open the next one.</p><div>';
+  LEVELS.forEach((L,idx)=>{
+    const open=L.n<=S.unlocked,b=S.best[L.n]||0;
+    s+='<div class="levelcard'+(open?'':' locked')+(b?' done':'')+'" style="animation-delay:'+(idx*45)+'ms"'+
+      (open?' onclick="startLevel('+L.n+')" tabindex="0" onkeydown="if(event.key===\'Enter\')startLevel('+L.n+')"':'')+'>'+
+      '<div class="num">'+L.n+'</div><div class="info"><div class="title">'+L.name+'</div>'+
+      '<div class="sub">'+L.sub+'</div>'+(b?'<div class="sub">🍌 '+b+'</div>':'')+'</div>'+
+      '<div class="go">'+(open?'▶️':'🔒')+'</div></div>';
+  });
+  s+='</div><div class="whybox"><h3>Why learn the clock?</h3>'+
+     '<p>🎒 So you know when to leave for school.</p>'+
+     '<p>⚽ So you know how long you can play before dark.</p>'+
+     '<p>📖 So you know when it is reading time.</p>'+
+     '<p>📞 So you know when Papa will call.</p></div>'+
+     '<div class="resetline"><button onclick="resetAll()">Start again from the beginning</button></div>';
+  document.getElementById('menu').innerHTML=s;
+}
+function resetAll(){
+  if(!confirm('Clear all bananas and start again?')) return;
+  S={name:'',crown:'leaf',unlocked:1,best:{}}; save();
+  document.getElementById('menu').style.display='none';
+  document.getElementById('setup').style.display='block';
+  pickedCrown='leaf'; renderSetup();
+}
+function show(w){
+  const m=document.getElementById('menu');
+  m.style.display = w==='menu' ? (window.innerWidth>=760?'grid':'block') : 'none';
+  document.getElementById('play').style.display  = w==='play' ?'block':'none';
+  document.getElementById('score').style.display = w==='score'?'block':'none';
+  closeModal(); window.scrollTo(0,0);
+}
+function goMenu(){ renderMenu(); show('menu'); }
+
+/* ======================= MODAL ======================= */
+function openModal(q){
+  document.getElementById('mart').innerHTML=monkeyArt('smug');
+  document.getElementById('mwho').textContent=mName()+' says';
+  document.getElementById('men').textContent=q.monkey||'Pah! This clock is broken. Definitely broken.';
+  document.getElementById('mchecken').textContent=q.check||'Look at one hand at a time.';
+  document.getElementById('modal').className='show';
+  setTimeout(()=>{const b=document.getElementById('mclose'); if(b) b.focus();},120);
+}
+function closeModal(){ const m=document.getElementById('modal'); if(m) m.className=''; }
+document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeModal(); });
+
+/* ======================= PLAY ======================= */
+function startLevel(n){
+  cur={lv:n,qs:buildQuestions(n),i:0,firstTry:0,tries:0};
+  document.getElementById('levelno').textContent='LEVEL '+n;
+  document.getElementById('levelname').textContent=LEVELS[n-1].name;
+  show('play'); renderQuestion();
+}
+function replayLevel(){ startLevel(cur.lv); }
+function renderDots(){
+  let s='';
+  for(let k=0;k<cur.qs.length;k++) s+='<span class="'+(k<cur.i?'on':(k===cur.i?'now':''))+'"></span>';
+  document.getElementById('dots').innerHTML=s;
+  document.getElementById('qcount').textContent=(cur.i+1)+' / '+cur.qs.length;
+}
+function sceneHead(art,text){
+  return art ? '<div class="scene"><div class="art">'+animalArt(art)+'</div><p class="qtext">'+text+'</p></div>'
+             : '<p class="qtext">'+text+'</p>';
+}
+function renderQuestion(){
+  const q=cur.qs[cur.i];
+  cur.tries=0; renderDots(); closeModal();
+  const f=document.getElementById('feedback'); f.innerHTML=''; f.className='feedback';
+  document.getElementById('nextbtn').style.display='none';
+  const area=document.getElementById('qarea');
+  area.style.animation='none'; void area.offsetWidth; area.style.animation='';
+
+  if(cur.lv===7){ renderMake(); return; }
+
+  if(q.kind==='tap'){
+    area.innerHTML='<div class="qgrid"><div class="clockwrap">'+
+      clockSVG({h:q.h,m:q.m,showHour:true,showMinute:true,
+        tapNumbers:(q.ask==='num'),tapHands:(q.ask==='part')})+
+      '</div><div>'+sceneHead(null,q.text)+'</div></div>';
+    area.querySelectorAll('.hit').forEach(el=>{
+      el.addEventListener('click',()=>{
+        const got=q.ask==='num'?parseInt(el.getAttribute('data-num'),10):el.getAttribute('data-part');
+        if(got===q.want){ el.classList.add('flashgood'); flyBanana(el.closest('svg')); markRight(); }
+        else{ el.classList.add('flashbad'); setTimeout(()=>el.classList.remove('flashbad'),500); markWrong(q); }
+      });
+    });
+    return;
+  }
+  if(q.kind==='word'){
+    area.innerHTML=sceneHead(q.art,q.text)+optsHTML(q.opts);
+    bindOpts(q); return;
+  }
+  const clock=clockSVG({h:q.h,m:q.m,
+    showHour:(q.kind==='hour'||q.kind==='read'),
+    showMinute:(q.kind==='mins'||q.kind==='read'),
+    minuteLabels:!!q.minuteLabels});
+  area.innerHTML='<div class="qgrid"><div class="clockwrap">'+clock+'</div><div>'+
+    sceneHead(q.art,q.text)+optsHTML(q.opts)+'</div></div>';
+  bindOpts(q);
+}
+function optsHTML(opts){
+  return '<div class="opts">'+opts.map((o,k)=>'<button class="opt" data-k="'+k+'">'+o+'</button>').join('')+'</div>';
+}
+function bindOpts(q){
+  document.querySelectorAll('#qarea .opt').forEach(b=>{
+    b.addEventListener('click',()=>{
+      const k=parseInt(b.getAttribute('data-k'),10);
+      if(k===q.ans){
+        b.classList.add('right');
+        document.querySelectorAll('#qarea .opt').forEach(x=>x.disabled=true);
+        flyBanana(b); markRight(q.after,q.afterHi);
+      } else { b.classList.add('wrong'); b.disabled=true; markWrong(q); }
+    });
+  });
+}
+function flyBanana(fromEl){
+  if(!fromEl) return;
+  const app=document.getElementById('app'),r=fromEl.getBoundingClientRect(),a=app.getBoundingClientRect();
+  for(let i=0;i<3;i++){
+    const b=document.createElement('div');
+    b.className='flyban'; b.textContent='🍌';
+    b.style.left=(r.left-a.left+r.width/2-14)+'px';
+    b.style.top =(r.top -a.top +r.height/2-14)+'px';
+    b.style.setProperty('--dx',((i-1)*46)+'px');
+    b.style.animationDelay=(i*90)+'ms';
+    app.appendChild(b);
+    setTimeout(()=>b.remove(),1400);
+  }
+}
+
+/* ---- Level 7 ---- */
+function renderMake(){
+  const q=cur.qs[cur.i],area=document.getElementById('qarea');
+  const wantHour=q.h,wantMin=(q.m===0)?12:q.m/5,step=q.step;
+  const ask=step===0?'Put the SHORT hand. Tap the hour number.':'Now the LONG hand. Tap where it points.';
+  area.innerHTML='<div class="qgrid"><div class="clockwrap">'+
+    clockSVG({h:q.h,m:q.m,showHour:step>0,showMinute:false,
+      ghostHour:step===0,ghostMinute:step===1,tapNumbers:true,minuteLabels:step===1})+
+    '</div><div><div class="digital">'+digital(q.h,q.m)+'</div><p class="qtext">'+ask+'</p></div></div>';
+  const hint=step===0
+    ?{monkey:'The hour? Use the second number, of course. The bigger number is more important.',
+      check:'In '+digital(q.h,q.m)+', the FIRST number is the hour.'}
+    :(q.m===0
+      ?{monkey:'Zero minutes! So put it on zero. Where is zero? There is no zero! Broken clock!',
+        check:'Zero minutes means the long hand points straight up at 12.'}
+      :{monkey:q.m+' minutes? Put it on number '+String(q.m)[0]+'. The number is right there in '+q.m+'!',
+        check:'Count in fives until you reach '+q.m+'. That lands on number '+wantMin+'.'});
+  area.querySelectorAll('.hit').forEach(el=>{
+    el.addEventListener('click',()=>{
+      const n=parseInt(el.getAttribute('data-num'),10);
+      const want=step===0?wantHour:wantMin;
+      if(n===want){
+        el.classList.add('flashgood');
+        if(step===0){ const keep=cur.tries; q.step=1; setTimeout(()=>{renderMake(); cur.tries=keep;},450); }
+        else { flyBanana(el.closest('svg')); markRight(engTime(q.h,q.m), hinTime(q.h,q.m)); }
+      } else { el.classList.add('flashbad'); setTimeout(()=>el.classList.remove('flashbad'),500); markWrong(hint); }
+    });
+  });
+}
+
+/* ---- feedback ---- */
+function markRight(extra,hindi){
+  const f=document.getElementById('feedback');
+  f.className='feedback good';
+  let t=(cur.tries===0?'🍌 Correct! One banana from '+mName()+'!':'🍌 Correct! He was wrong again!');
+  if(extra) t+='<br>'+extra;
+  if(hindi)  t+=' <span class="hindiword">('+hindi+')</span>';
+  f.innerHTML=t;
+  if(cur.tries===0) cur.firstTry++;
+  closeModal();
+  const b=document.getElementById('nextbtn');
+  b.style.display='block';
+  b.textContent=(cur.i===cur.qs.length-1)?'Finish level ▶':'Next ▶';
+}
+function markWrong(q){
+  cur.tries++;
+  const f=document.getElementById('feedback');
+  f.className='feedback again';
+  f.textContent='🤔 Not that one. Try again.';
+  openModal(q||{});
+}
+function nextQuestion(){
+  cur.i++;
+  if(cur.i>=cur.qs.length){ finishLevel(); return; }
+  renderQuestion();
+}
+
+/* ---- score ---- */
+function finishLevel(){
+  const total=cur.qs.length,got=cur.firstTry;
+  if(!S.best[cur.lv]||got>S.best[cur.lv]) S.best[cur.lv]=got;
+  if(cur.lv===S.unlocked&&S.unlocked<LEVELS.length) S.unlocked=cur.lv+1;
+  save();
+  let bs='';
+  for(let i=0;i<got;i++) bs+='<span style="animation-delay:'+(i*90)+'ms">🍌</span>';
+  document.getElementById('bananas').innerHTML=got>0?bs:'<span>🥥</span>';
+  document.getElementById('scorehead').textContent='Level '+cur.lv+' done!';
+  document.getElementById('scoretext').textContent=
+    'You won '+got+' bananas out of '+total+'.'+
+    (cur.lv<LEVELS.length?' Level '+(cur.lv+1)+' is open now.':' You finished every level!');
+  let mk,mood;
+  if(got===total){ mood='sad'; mk='All of them?! Fine, FINE. Take my bananas. I am still the king though.'; }
+  else if(got>=Math.ceil(total*0.6)){ mood='sad'; mk="Hmph. You got most of them. Beginner's luck. Play again, I will win."; }
+  else { mood='smug'; mk='HA! I kept my bananas! Come back when you can read a clock, little one.'; }
+  document.getElementById('monkeysays').innerHTML=
+    '<div class="mtop"><div class="art">'+monkeyArt(mood)+'</div><div style="flex:1">'+
+    '<div class="mwho">'+mName()+' says</div><div class="msay"><div class="en">'+mk+'</div></div></div></div>';
+  show('score');
+}
+
+document.addEventListener('keydown',e=>{
+  if(document.getElementById('play').style.display!=='block') return;
+  if(document.getElementById('modal').className==='show') return;
+  const btns=document.querySelectorAll('#qarea .opt');
+  const k=parseInt(e.key,10);
+  if(btns.length&&k>=1&&k<=btns.length&&!btns[k-1].disabled) btns[k-1].click();
+  if(e.key==='Enter'){ const nb=document.getElementById('nextbtn'); if(nb.style.display==='block') nb.click(); }
+});
+
+/* ======================= BOOT ======================= */
+load();
+pickedCrown=S.crown||'leaf';
+if(S.name){ document.getElementById('setup').style.display='none'; goMenu(); }
+else { renderSetup(); }
+</script>
+</body>
+</html>
