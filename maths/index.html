@@ -1,0 +1,955 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mandi Maths — Anshu's Truck</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@600;700;800&family=Noto+Sans+Devanagari:wght@600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --road:#1E2430;
+    --teal:#0E8F8C;
+    --deep:#0A5F5E;
+    --pink:#E23E7C;
+    --marigold:#FFC53D;
+    --tomato:#D93A3A;
+    --jute:#D9C09A;
+    --wood:#C98A4B;
+    --paper:#FFF8EC;
+    --ink:#22201D;
+    --grey:#8A8478;
+    --head:'Fredoka',system-ui,sans-serif;
+    --body:'Nunito',system-ui,sans-serif;
+    --dev:'Noto Sans Devanagari','Nirmala UI',system-ui,sans-serif;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; font-family:var(--body); color:var(--ink);
+    background:
+      radial-gradient(circle at 10% 6%, rgba(14,143,140,.35), transparent 42%),
+      radial-gradient(circle at 90% 94%, rgba(226,62,124,.22), transparent 42%),
+      var(--road);
+    display:flex; justify-content:center; min-height:100vh;
+    -webkit-tap-highlight-color:transparent;
+  }
+  /* math-symbol road watermark */
+  #wm{position:fixed; inset:0; pointer-events:none; z-index:0; overflow:hidden;}
+  #wm span{position:absolute; color:#fff; opacity:.07; font-family:var(--head); font-weight:700;}
+
+  #app{width:100%; max-width:480px; background:var(--paper); min-height:100vh;
+    position:relative; overflow:hidden; z-index:1;
+    box-shadow:0 0 0 6px var(--ink), 0 0 40px rgba(0,0,0,.5);}
+
+  /* ---- truck tailboard header ---- */
+  header{background:linear-gradient(165deg,var(--teal) 0%,var(--deep) 100%);
+    text-align:center; padding:12px 10px 14px; color:#fff; position:relative;}
+  header .tag{font-size:.68rem; font-weight:700; letter-spacing:4px; color:var(--marigold);
+    text-transform:uppercase; font-family:var(--head);}
+  header h1{margin:2px 0 0; font-family:var(--head); font-weight:700; font-size:1.5rem;
+    text-shadow:2px 2px 0 rgba(0,0,0,.35);}
+  header .syms{font-family:var(--head); font-weight:700; font-size:.95rem; color:#fff;
+    opacity:.55; letter-spacing:7px; margin-top:3px;}
+  .stripe{height:12px; background:repeating-linear-gradient(90deg,
+    var(--pink) 0 22px, var(--marigold) 22px 44px, var(--paper) 44px 66px, var(--teal) 66px 88px);
+    border-top:3px solid var(--ink); border-bottom:3px solid var(--ink);}
+
+  h2{font-family:var(--head); color:var(--deep); font-size:1.3rem; margin:10px 0 6px;}
+
+  /* ---------- setup ---------- */
+  #setup{padding:16px 18px 30px; text-align:center;}
+  #setup p{font-size:1.02rem; line-height:1.6; margin:6px 0;}
+  .nameinput{width:100%; padding:14px; font-family:var(--head); font-size:1.2rem; font-weight:600;
+    border:3px solid var(--ink); border-radius:12px; text-align:center; background:#fff; color:var(--ink);}
+  .hats{display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; margin-top:12px;}
+  .hatbtn{background:#fff; border:3px solid var(--ink); border-radius:12px; padding:6px 2px; cursor:pointer;}
+  .hatbtn.sel{border-color:var(--teal); background:#E6F5F4; box-shadow:0 0 0 3px rgba(14,143,140,.25);}
+  .hatbtn div{font-family:var(--head); font-weight:600; font-size:.76rem; margin-top:2px;}
+  .hatbtn svg{width:100%; height:54px;}
+
+  /* ---------- menu ---------- */
+  #menu{padding:14px 14px 24px;}
+  .note{font-size:.85rem; font-weight:700; color:var(--deep); text-align:center;
+    margin:0 0 10px; font-family:var(--head);}
+  .storystrip{background:#fff; border:3px solid var(--deep); border-radius:14px; padding:10px 12px;
+    display:flex; gap:10px; align-items:center; margin-bottom:12px;}
+  .storystrip svg{width:76px; height:76px; flex:0 0 76px;}
+  .storystrip .t{font-family:var(--head); font-weight:600; color:var(--deep); font-size:.95rem;}
+  .storystrip .n{font-size:.95rem; line-height:1.45; font-style:italic;}
+
+  #coinbar{background:#fff; border:3px solid var(--marigold); border-radius:14px; padding:10px 12px;
+    margin-bottom:12px; text-align:center; font-family:var(--head); font-weight:600;}
+  #coinbar .big{font-size:1.3rem; color:var(--tomato);}
+
+  .friends{background:#fff; border:3px dashed var(--teal); border-radius:14px; padding:10px; margin-bottom:12px;}
+  .friends h3{font-family:var(--head); color:var(--teal); margin:0 0 6px; font-size:.98rem; text-align:center;}
+  .friendrow{display:grid; grid-template-columns:repeat(5,1fr); gap:4px;}
+  .friend{text-align:center;}
+  .friend svg{width:100%; height:50px;}
+  .friend div{font-family:var(--head); font-weight:600; font-size:.68rem; line-height:1.2;}
+
+  .levelcard{display:flex; align-items:center; gap:12px; background:#fff; border:3px solid var(--ink);
+    border-radius:14px; padding:12px; margin-bottom:10px; cursor:pointer;
+    box-shadow:4px 4px 0 rgba(34,32,29,.25); transition:transform .15s, box-shadow .15s;
+    animation:slideUp .35s ease-out both;}
+  .levelcard:active{transform:translate(2px,2px); box-shadow:2px 2px 0 rgba(34,32,29,.25);}
+  .levelcard.locked{opacity:.45; cursor:default; box-shadow:none;}
+  .levelcard .num{font-family:var(--head); font-weight:700; font-size:1.15rem; background:var(--marigold);
+    border:3px solid var(--ink); border-radius:10px; width:48px; height:48px; flex:0 0 48px;
+    display:flex; align-items:center; justify-content:center;}
+  .levelcard.done .num{background:var(--teal); color:#fff;}
+  .levelcard .info{flex:1;}
+  .levelcard .title{font-family:var(--head); font-weight:600; font-size:1.06rem; color:var(--deep);}
+  .levelcard .sub{font-size:.8rem; color:var(--grey); font-weight:700;}
+  .levelcard .go{font-size:1.25rem;}
+
+  .whybox{background:#fff; border:3px dashed var(--pink); border-radius:14px; padding:12px 14px; margin-top:16px;}
+  .whybox h3{font-family:var(--head); color:var(--pink); margin:0 0 6px; font-size:1rem;}
+  .whybox p{margin:0 0 6px; font-size:.94rem; line-height:1.55;}
+  .resetline{text-align:center; margin-top:14px;}
+  .resetline button{background:none; border:none; color:var(--grey); font-weight:700;
+    font-size:.8rem; text-decoration:underline; cursor:pointer; font-family:var(--body);}
+
+  /* ---------- play ---------- */
+  #play{display:none; padding:10px 16px 30px;}
+  .meta{display:flex; justify-content:space-between; align-items:center; margin:10px 0 2px;
+    font-family:var(--head); font-weight:600; font-size:.85rem; color:var(--teal); letter-spacing:1px;}
+  #levelname{font-family:var(--head); font-weight:600; font-size:1.35rem; color:var(--deep); margin:0 0 8px;}
+  #dots{display:flex; gap:6px; margin-bottom:14px;}
+  #dots span{flex:1; height:10px; border-radius:6px; background:#E8DFCC; border:2px solid var(--ink);
+    transition:background .3s;}
+  #dots span.on{background:var(--teal);}
+  #dots span.now{background:var(--marigold); animation:pulse 1.6s ease-in-out infinite;}
+  #qarea{animation:fadeIn .3s ease-out both;}
+  .qgrid{display:block;}
+  .qtext{font-size:1.24rem; line-height:1.55; font-weight:800; margin:0;}
+  .scene{display:flex; align-items:center; gap:10px; margin-bottom:6px;}
+  .scene .art{width:66px; flex:0 0 66px;}
+  .scene .art svg{width:100%; height:66px;}
+
+  .stage{background:#fff; border:3px solid var(--ink); border-radius:14px; padding:12px 10px;
+    margin:6px 0 12px; text-align:center;}
+  .cratebox{display:flex; flex-wrap:wrap; justify-content:center; gap:6px;}
+  .crate{width:44px; cursor:pointer; border:3px solid transparent; border-radius:8px; padding:1px;}
+  .crate svg{width:100%; height:38px; display:block;}
+  .crate.tapped{border-color:var(--teal); background:#E6F5F4;}
+  .counter{font-family:var(--head); font-weight:600; font-size:.9rem; color:var(--teal); margin-top:8px;}
+  .rowline{display:flex; justify-content:center; gap:6px; margin-bottom:6px;}
+
+  .tenrow{display:flex; flex-wrap:wrap; justify-content:center; align-items:flex-end; gap:8px;}
+  .bundle{width:56px;} .bundle svg{width:100%; height:78px; display:block;}
+  .single{width:34px;} .single svg{width:100%; height:44px; display:block;}
+  .stagelabel{font-family:var(--head); font-weight:600; font-size:.82rem; color:var(--grey);
+    letter-spacing:2px; text-transform:uppercase; margin-bottom:8px;}
+
+  .seq{display:flex; justify-content:center; flex-wrap:wrap; gap:8px;}
+  .seq b{font-family:var(--head); font-weight:700; font-size:1.5rem; background:var(--marigold);
+    border:3px solid var(--ink); border-radius:10px; min-width:54px; padding:6px 4px;}
+  .seq b.blank{background:#fff; color:var(--pink); border-style:dashed;}
+
+  .vs{display:flex; align-items:center; justify-content:center; gap:8px;}
+  .truckcard{flex:1; background:#fff; border:3px solid var(--ink); border-radius:12px; padding:6px;
+    cursor:pointer; box-shadow:0 4px 0 rgba(34,32,29,.3);}
+  .truckcard:active{transform:translateY(3px); box-shadow:0 1px 0 rgba(34,32,29,.3);}
+  .truckcard svg{width:100%; height:56px;}
+  .truckcard b{display:block; font-family:var(--head); font-weight:700; font-size:1.8rem;}
+  .truckcard.right{background:var(--teal); color:#fff;}
+  .truckcard.wrong{background:var(--tomato); color:#fff; animation:shake .4s;}
+  .vs .gap{font-family:var(--head); font-weight:700; font-size:2rem; color:var(--pink);}
+
+  .sums{display:inline-block; text-align:right; font-family:var(--head); font-weight:700;
+    font-size:2.1rem; line-height:1.25; letter-spacing:6px;}
+  .sums .colhead{font-size:.68rem; letter-spacing:2px; color:var(--grey); font-family:var(--head);}
+  .sums .bar{border-top:4px solid var(--ink); margin-top:4px; padding-top:4px; color:var(--pink);}
+  .sums .op{color:var(--tomato);}
+
+  .tags{display:flex; justify-content:center; gap:10px; flex-wrap:wrap;}
+  .tag2{background:var(--marigold); border:3px solid var(--ink); border-radius:10px; padding:6px 10px;
+    font-family:var(--head); font-weight:700; font-size:1.1rem;}
+
+  .opts{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:10px;}
+  .opts.wide{grid-template-columns:1fr;}
+  .opt{border:3px solid var(--ink); border-radius:12px; padding:16px 6px; background:#fff;
+    font-family:var(--head); font-weight:700; font-size:1.16rem; cursor:pointer;
+    box-shadow:0 4px 0 rgba(34,32,29,.3); color:var(--ink); transition:transform .12s, background .2s;}
+  .opt:active{transform:translateY(3px); box-shadow:0 1px 0 rgba(34,32,29,.3);}
+  .opt:focus-visible{outline:4px solid var(--deep); outline-offset:2px;}
+  .opt.right{background:var(--teal); color:#fff; animation:pop .4s ease-out;}
+  .opt.wrong{background:var(--tomato); color:#fff; animation:shake .4s ease-out;}
+  .opt.sign{font-size:2rem; padding:10px 6px;}
+
+  .feedback{text-align:center; font-family:var(--head); font-weight:600; font-size:1.1rem;
+    margin:14px 0 0; min-height:28px; line-height:1.5;}
+  .feedback.good{color:var(--teal); animation:pop .4s ease-out;}
+  .feedback.again{color:var(--tomato);}
+  .hindiword{color:var(--pink); font-family:var(--dev);}
+
+  .btn{display:block; width:100%; border:3px solid var(--ink); border-radius:12px; padding:14px;
+    font-family:var(--head); font-size:1.06rem; font-weight:600; cursor:pointer;
+    background:var(--marigold); color:var(--ink); box-shadow:0 4px 0 rgba(34,32,29,.35); margin-top:14px;}
+  .btn:active{transform:translateY(3px); box-shadow:0 1px 0 rgba(34,32,29,.35);}
+  .btn:focus-visible{outline:4px solid var(--deep); outline-offset:2px;}
+  .btn.green{background:var(--teal); color:#fff;}
+  .btn.plain{background:#fff;}
+
+  /* ---------- crow pop-up ---------- */
+  #modal{display:none; position:fixed; inset:0; z-index:60; background:rgba(30,36,48,.72);
+    padding:14px; align-items:center; justify-content:center;}
+  #modal.show{display:flex; animation:fadeIn .2s ease-out;}
+  .mcard{background:var(--paper); border:5px solid var(--deep); border-radius:20px; max-width:430px;
+    width:100%; padding:14px; box-shadow:0 12px 0 rgba(0,0,0,.35);
+    animation:swoopIn .5s cubic-bezier(.3,1.5,.5,1) both; max-height:94vh; overflow-y:auto;}
+  .mtop{display:flex; gap:10px; align-items:flex-start;}
+  .mtop .art{width:96px; flex:0 0 96px;}
+  .mtop .art svg{width:100%; height:96px; animation:wiggle 1.6s ease-in-out infinite;}
+  .mwho{font-family:var(--head); font-weight:600; font-size:.82rem; color:var(--deep);
+    letter-spacing:1px; text-transform:uppercase;}
+  .msay{background:#fff; border:3px solid var(--pink); border-radius:14px; padding:9px 11px; margin-top:4px;}
+  .msay .en{font-weight:700; font-size:1.05rem; line-height:1.5; font-style:italic;}
+  .mcheck{background:#fff; border:3px solid var(--teal); border-radius:14px; padding:9px 11px; margin-top:10px;}
+  .mcheck .who{font-family:var(--head); font-weight:600; font-size:.8rem; color:var(--teal);
+    letter-spacing:1px; text-transform:uppercase;}
+  .mcheck .en{font-weight:700; font-size:1.05rem; line-height:1.5;}
+
+  .flycoin{position:absolute; width:30px; height:30px; border-radius:50%; background:var(--marigold);
+    border:3px solid var(--ink); color:var(--ink); font-family:var(--head); font-weight:700;
+    font-size:.95rem; line-height:24px; text-align:center; pointer-events:none; z-index:40;
+    animation:fly 1s ease-out forwards;}
+
+  /* ---------- score ---------- */
+  #score{display:none; padding:20px 18px 30px; text-align:center;}
+  #coins{display:flex; flex-wrap:wrap; justify-content:center; gap:6px; margin:6px 0 10px;}
+  #coins i{width:38px; height:38px; border-radius:50%; background:var(--marigold); border:3px solid var(--ink);
+    font-family:var(--head); font-weight:700; font-style:normal; font-size:1.05rem; line-height:32px;
+    animation:drop .6s ease-out both;}
+  #scoretext{font-size:1.03rem; line-height:1.65; font-weight:700;}
+  #crowsays{margin-top:14px; text-align:left;}
+
+  footer{font-size:.66rem; text-align:center; color:var(--paper); font-weight:600; padding:10px;
+    letter-spacing:3px; background:var(--ink); font-family:var(--head);}
+
+  @keyframes fadeIn{from{opacity:0;}to{opacity:1;}}
+  @keyframes slideUp{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:none;}}
+  @keyframes pop{0%{transform:scale(1);}45%{transform:scale(1.09);}100%{transform:scale(1);}}
+  @keyframes shake{0%,100%{transform:translateX(0);}25%{transform:translateX(-6px);}
+                   50%{transform:translateX(6px);}75%{transform:translateX(-3px);}}
+  @keyframes pulse{0%,100%{opacity:1;}50%{opacity:.45;}}
+  @keyframes wiggle{0%,100%{transform:rotate(-5deg);}50%{transform:rotate(5deg);}}
+  @keyframes swoopIn{0%{transform:translate(60%,-120%) rotate(12deg);opacity:0;}
+                     100%{transform:translate(0,0) rotate(0);opacity:1;}}
+  @keyframes fly{0%{transform:translate(0,0) scale(.6);opacity:1;}
+                 100%{transform:translate(var(--dx),-120px) scale(1.2);opacity:0;}}
+  @keyframes drop{from{transform:translateY(-40px);opacity:0;}to{transform:none;opacity:1;}}
+
+  @media (min-width:760px){
+    body{align-items:flex-start;}
+    #app{max-width:920px;}
+    header h1{font-size:1.95rem;}
+    #menu{padding:20px 28px 30px; display:grid; grid-template-columns:1fr 1fr; gap:0 18px; align-items:start;}
+    .note,.storystrip,#coinbar,.friends{grid-column:1 / -1;}
+    .whybox{grid-column:2; margin-top:0;}
+    .resetline{grid-column:1 / -1;}
+    #play{padding:14px 28px 40px;}
+    #levelname{font-size:1.7rem;}
+    .qgrid{display:grid; grid-template-columns:1fr 1fr; gap:28px; align-items:center;}
+    .qgrid .stage{margin:0;}
+    .qtext{font-size:1.4rem;}
+    .opt{font-size:1.2rem; padding:18px 8px;}
+    #setup{max-width:520px; margin:0 auto;}
+  }
+  @media (prefers-reduced-motion:reduce){
+    *{animation:none !important; transition:none !important;}
+  }
+</style>
+</head>
+<body>
+<div id="wm" aria-hidden="true"></div>
+
+<div id="app">
+  <header>
+    <div class="tag">★ Anshu Transport ★</div>
+    <h1>Mandi Maths</h1>
+    <div class="syms">+ − × = ÷</div>
+  </header>
+  <div class="stripe"></div>
+
+  <div id="setup"></div>
+  <div id="menu" style="display:none"></div>
+
+  <div id="play">
+    <button class="btn plain" onclick="goMenu()">◀ All levels</button>
+    <div class="meta"><span id="levelno"></span><span id="qcount"></span></div>
+    <div id="levelname"></div>
+    <div id="dots"></div>
+    <div id="qarea"></div>
+    <div class="feedback" id="feedback"></div>
+    <button class="btn green" id="nextbtn" style="display:none" onclick="nextQuestion()">Next ▶</button>
+  </div>
+
+  <div id="score">
+    <div id="coins"></div>
+    <h2 id="scorehead"></h2>
+    <div id="scoretext"></div>
+    <div id="crowsays"></div>
+    <button class="btn green" onclick="goMenu()">Back to all levels</button>
+    <button class="btn plain" onclick="replayLevel()">Play this level again</button>
+  </div>
+
+  <footer>HORN OK PLEASE ★ MADE WITH PAPA</footer>
+</div>
+
+<div id="modal" role="dialog" aria-modal="true">
+  <div class="mcard">
+    <div class="mtop">
+      <div class="art" id="mart"></div>
+      <div style="flex:1">
+        <div class="mwho" id="mwho"></div>
+        <div class="msay"><div class="en" id="men"></div></div>
+      </div>
+    </div>
+    <div class="mcheck">
+      <div class="who">Is he right? Check!</div>
+      <div class="en" id="mchecken"></div>
+    </div>
+    <button class="btn green" id="mclose" onclick="closeModal()">I will check myself! ✋</button>
+  </div>
+</div>
+
+<script>
+/* =========================================================
+   SAVED PROGRESS
+   ========================================================= */
+const KEY='mandi_maths_v1';
+let S={name:'', hat:'gamcha', unlocked:1, best:{}};
+function save(){ try{ localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){} }
+function load(){ try{ const r=localStorage.getItem(KEY); if(r) S=Object.assign(S, JSON.parse(r)); }catch(e){} }
+function cName(){ return S.name || 'Kaalu the Crow'; }
+
+/* =========================================================
+   ROAD WATERMARK
+   ========================================================= */
+(function(){
+  const syms=['+','−','×','=','÷','<','>','%'];
+  let h='';
+  for(let i=0;i<90;i++){
+    h+='<span style="left:'+(Math.random()*100).toFixed(1)+'%;top:'+(Math.random()*100).toFixed(1)+
+       '%;font-size:'+(14+Math.random()*30).toFixed(0)+'px;transform:rotate('+
+       (Math.random()*60-30).toFixed(0)+'deg)">'+syms[i%syms.length]+'</span>';
+  }
+  document.getElementById('wm').innerHTML=h;
+})();
+
+/* =========================================================
+   ARTWORK
+   ========================================================= */
+function hatArt(kind){
+  if(kind==='topi')
+    return '<g stroke="#22201D" stroke-width="3">'+
+      '<path d="M40 40 q30 -26 60 0Z" fill="#1B4B8F"/>'+
+      '<path d="M36 40 h70 q8 0 8 6 h-86 q0 -6 8 -6Z" fill="#123A72"/></g>';
+  if(kind==='specs')
+    return '<g stroke="#22201D" stroke-width="3.5" fill="#2A2A33">'+
+      '<rect x="38" y="62" width="26" height="18" rx="5"/>'+
+      '<rect x="72" y="62" width="26" height="18" rx="5"/>'+
+      '<path d="M64 70 h8" fill="none"/></g>';
+  /* gamcha — red checked cloth */
+  return '<g stroke="#22201D" stroke-width="3">'+
+    '<path d="M36 44 q34 -28 66 0 q-6 8 -33 8 q-27 0 -33 -8Z" fill="#D93A3A"/></g>'+
+    '<path d="M46 34 v14 M60 28 v20 M74 28 v20 M88 34 v14 M38 40 h64" stroke="#fff" stroke-width="2.5" opacity=".85" fill="none"/>';
+}
+function crowArt(mood, hat){
+  const hk=hat||S.hat;
+  let eyes,brow,beak;
+  if(mood==='sad'){
+    eyes='<circle cx="56" cy="72" r="7.5" fill="#fff" stroke="#22201D" stroke-width="2.5"/>'+
+         '<circle cx="86" cy="72" r="7.5" fill="#fff" stroke="#22201D" stroke-width="2.5"/>'+
+         '<circle cx="56" cy="75" r="3.4" fill="#22201D"/><circle cx="86" cy="75" r="3.4" fill="#22201D"/>';
+    brow='<path d="M46 61 L66 66 M96 61 L76 66" stroke="#22201D" stroke-width="3.5" fill="none" stroke-linecap="round"/>';
+    beak='<path d="M70 84 L112 94 L70 100Z" fill="#F4A02E" stroke="#22201D" stroke-width="3"/>';
+  } else {
+    eyes='<circle cx="56" cy="72" r="7.5" fill="#fff" stroke="#22201D" stroke-width="2.5"/>'+
+         '<circle cx="86" cy="72" r="7.5" fill="#fff" stroke="#22201D" stroke-width="2.5"/>'+
+         '<circle cx="58" cy="70" r="3.4" fill="#22201D"/><circle cx="88" cy="70" r="3.4" fill="#22201D"/>'+
+         '<path d="M48 70 q8 -5 16 -2 M78 70 q8 -5 16 -2" stroke="#22201D" stroke-width="3" fill="none" stroke-linecap="round"/>';
+    brow='<path d="M46 60 q10 -6 20 -1 M96 60 q-10 -6 -20 -1" stroke="#22201D" stroke-width="3.5" fill="none" stroke-linecap="round"/>';
+    beak='<path d="M70 82 L114 90 L70 98Z" fill="#F4A02E" stroke="#22201D" stroke-width="3"/>';
+  }
+  return '<svg viewBox="0 0 140 130" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="the crow">'+
+    '<path d="M22 84 q-18 10 -14 26 q16 -2 26 -14Z" fill="#3A4055" stroke="#22201D" stroke-width="3.5"/>'+
+    '<ellipse cx="70" cy="78" rx="42" ry="38" fill="#454C63" stroke="#22201D" stroke-width="4"/>'+
+    '<path d="M34 96 q18 14 42 8" stroke="#333A4D" stroke-width="6" fill="none" stroke-linecap="round"/>'+
+    beak+brow+eyes+hatArt(hk)+'</svg>';
+}
+
+function truckArt(){
+  return '<svg viewBox="0 0 120 76" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="truck">'+
+    '<rect x="6" y="20" width="58" height="34" rx="4" fill="#0E8F8C" stroke="#22201D" stroke-width="3.5"/>'+
+    '<path d="M10 26 h50 M10 36 h50 M10 46 h50" stroke="#0A5F5E" stroke-width="2.5"/>'+
+    '<path d="M64 30 h20 l14 16 v8 H64Z" fill="#E23E7C" stroke="#22201D" stroke-width="3.5"/>'+
+    '<rect x="68" y="34" width="16" height="12" rx="2" fill="#CFE9EA" stroke="#22201D" stroke-width="2.5"/>'+
+    '<rect x="4" y="54" width="98" height="6" fill="#FFC53D" stroke="#22201D" stroke-width="2.5"/>'+
+    '<circle cx="30" cy="64" r="9" fill="#2A2A33" stroke="#22201D" stroke-width="3"/>'+
+    '<circle cx="84" cy="64" r="9" fill="#2A2A33" stroke="#22201D" stroke-width="3"/>'+
+    '<circle cx="30" cy="64" r="3" fill="#D9C09A"/><circle cx="84" cy="64" r="3" fill="#D9C09A"/></svg>';
+}
+function crateArt(){
+  return '<svg viewBox="0 0 44 38" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="crate">'+
+    '<circle cx="14" cy="10" r="6" fill="#D93A3A" stroke="#22201D" stroke-width="2.5"/>'+
+    '<circle cx="28" cy="9" r="6" fill="#2E9E5B" stroke="#22201D" stroke-width="2.5"/>'+
+    '<rect x="3" y="12" width="38" height="23" rx="3" fill="#C98A4B" stroke="#22201D" stroke-width="3"/>'+
+    '<path d="M5 24 h34 M22 14 v20" stroke="#8B5E3C" stroke-width="2.5"/></svg>';
+}
+function sackArt(){
+  return '<svg viewBox="0 0 34 44" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="sack">'+
+    '<rect x="11" y="4" width="12" height="9" rx="3" fill="#B9A075" stroke="#22201D" stroke-width="2.5"/>'+
+    '<path d="M7 14 q10 -6 20 0 q6 11 4 24 q-14 6 -28 0 q-2 -13 4 -24Z" fill="#D9C09A" stroke="#22201D" stroke-width="3"/>'+
+    '<path d="M9 15 q8 6 16 0" stroke="#22201D" stroke-width="2.5" fill="none"/></svg>';
+}
+function bundleArt(){
+  let dots='';
+  for(let r=0;r<5;r++) for(let c=0;c<2;c++)
+    dots+='<ellipse cx="'+(19+c*22)+'" cy="'+(15+r*14)+'" rx="8" ry="6" fill="#D9C09A" stroke="#22201D" stroke-width="2"/>';
+  return '<svg viewBox="0 0 60 84" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="bundle of ten sacks">'+
+    '<rect x="3" y="4" width="54" height="76" rx="7" fill="#F0E4CC" stroke="#22201D" stroke-width="3.5"/>'+
+    dots+
+    '<rect x="0" y="34" width="60" height="15" fill="#0E8F8C" stroke="#22201D" stroke-width="2.5"/>'+
+    '<text x="30" y="46" font-family="Fredoka,sans-serif" font-weight="700" font-size="13" fill="#fff" text-anchor="middle">10</text></svg>';
+}
+const FACE='<circle cx="52" cy="52" r="29" fill="#C98A4B" stroke="#22201D" stroke-width="4"/>';
+const EYES='<circle cx="42" cy="50" r="5.5" fill="#fff" stroke="#22201D" stroke-width="2.5"/>'+
+           '<circle cx="63" cy="50" r="5.5" fill="#fff" stroke="#22201D" stroke-width="2.5"/>'+
+           '<circle cx="43" cy="51" r="2.6" fill="#22201D"/><circle cx="64" cy="51" r="2.6" fill="#22201D"/>';
+const SMILE='<path d="M42 64 q11 9 21 0" stroke="#22201D" stroke-width="3" fill="none" stroke-linecap="round"/>';
+function castArt(kind){
+  const open='<svg viewBox="0 0 104 104" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="'+kind+'">';
+  if(kind==='rani') return truckArt();
+  if(kind==='bittu')
+    return open+FACE+'<path d="M26 40 q26 -24 52 0 q-6 6 -26 6 q-20 0 -26 -6Z" fill="#1B4B8F" stroke="#22201D" stroke-width="3"/>'+
+      EYES+SMILE+'</svg>';
+  if(kind==='sarita')
+    return open+'<path d="M18 60 q4 -46 34 -46 q30 0 34 46 q-14 10 -34 10 q-20 0 -34 -10Z" fill="#E23E7C" stroke="#22201D" stroke-width="3.5"/>'+
+      FACE+'<path d="M28 40 q24 -18 48 0" fill="#3A2A22" stroke="#22201D" stroke-width="3"/>'+
+      '<circle cx="52" cy="34" r="3.4" fill="#D93A3A"/>'+EYES+SMILE+'</svg>';
+  if(kind==='chacha')
+    return open+FACE+'<path d="M24 34 q28 -14 56 0" stroke="#22201D" stroke-width="4" fill="none"/>'+
+      '<g stroke="#22201D" stroke-width="3" fill="none"><circle cx="42" cy="50" r="10"/><circle cx="64" cy="50" r="10"/><path d="M52 50 h2"/></g>'+
+      '<circle cx="42" cy="50" r="2.6" fill="#22201D"/><circle cx="64" cy="50" r="2.6" fill="#22201D"/>'+
+      '<path d="M36 66 q8 -7 16 -2 q8 -5 16 2" stroke="#22201D" stroke-width="5" fill="none" stroke-linecap="round"/></svg>';
+  /* golu the mandi cat */
+  return open+
+    '<path d="M28 30 L24 10 L44 22Z" fill="#C9C2B4" stroke="#22201D" stroke-width="3"/>'+
+    '<path d="M76 30 L80 10 L60 22Z" fill="#C9C2B4" stroke="#22201D" stroke-width="3"/>'+
+    '<circle cx="52" cy="54" r="30" fill="#D9D3C6" stroke="#22201D" stroke-width="4"/>'+
+    '<circle cx="41" cy="50" r="5.5" fill="#fff" stroke="#22201D" stroke-width="2.5"/>'+
+    '<circle cx="63" cy="50" r="5.5" fill="#fff" stroke="#22201D" stroke-width="2.5"/>'+
+    '<circle cx="42" cy="51" r="2.6" fill="#22201D"/><circle cx="64" cy="51" r="2.6" fill="#22201D"/>'+
+    '<path d="M52 62 l-5 4 h10Z" fill="#D93A3A" stroke="#22201D" stroke-width="2"/>'+
+    '<path d="M22 58 h14 M22 66 h14 M82 58 h-14 M82 66 h-14" stroke="#22201D" stroke-width="2.5"/></svg>';
+}
+const CAST=[
+ {id:'rani',   name:'Rani the truck'},
+ {id:'bittu',  name:'Bittu'},
+ {id:'sarita', name:'Sarita didi'},
+ {id:'chacha', name:'Kaanta chacha'},
+ {id:'golu',   name:'Golu'}
+];
+
+/* =========================================================
+   LEVELS
+   ========================================================= */
+const LEVELS=[
+ {n:1,name:'Count the Crates',  sub:'One touch, one crate'},
+ {n:2,name:'Bundles and Loose', sub:'Tens and ones'},
+ {n:3,name:'Jump Counting',     sub:'Twos, fives, tens'},
+ {n:4,name:'Which Truck Wins?', sub:'Bigger, smaller, same'},
+ {n:5,name:'Loading Up',        sub:'Adding, with carrying'},
+ {n:6,name:'Unloading',         sub:'Taking away, with borrowing'},
+ {n:7,name:'Rupees at the Mandi',sub:'Money and change'},
+ {n:8,name:'Mandi Day',         sub:'Think, then answer'}
+];
+
+/* Every question names the exact mistake the crow will make. */
+const QS={
+1:[
+ {kind:'count',n:7,rows:1,text:'How many crates?',c:'7',w:['8','6','9'],hi:'टोकरी',
+  crow:'Eight! I counted this one twice.',            check:'Touch each crate once. Then count.'},
+ {kind:'count',n:12,rows:2,text:'How many crates?',c:'12',w:['2','6','11'],
+  crow:'Two rows. So two crates!',                    check:'Count the crates, not the rows.'},
+ {kind:'count',n:15,rows:3,text:'How many crates?',c:'15',w:['5','3','14'],
+  crow:'One row has five. Answer five!',              check:'Count all three rows: 5, 10, 15.'},
+ {kind:'count',n:9,rows:1,text:'How many crates?',c:'9',w:['10','8','11'],
+  crow:'Ten! Nine always feels like ten.',            check:'Count slowly. Stop at the last one.'},
+ {kind:'count',n:18,rows:2,text:'How many crates?',c:'18',w:['9','2','16'],
+  crow:'Nine. Both rows look the same, so nine.',     check:'Two rows of nine. Count both rows.'},
+ {kind:'count',n:20,rows:4,text:'How many crates?',c:'20',w:['9','4','25'],hi:'बीस',
+  crow:'Four rows, five each. Four and five is nine!',check:'Count in fives: 5, 10, 15, 20.'}
+],
+2:[
+ {kind:'tens',t:3,o:4,text:'How many sacks?',c:'34',w:['7','43','304'],hi:'बोरा',
+  crow:'Three and four. Seven sacks!',                check:'One bundle is ten sacks, not one.'},
+ {kind:'tens',t:5,o:2,text:'How many sacks?',c:'52',w:['25','7','502'],
+  crow:'Two and five. Twenty-five!',                  check:'Bundles first. Five tens, two ones.'},
+ {kind:'tens',t:4,o:0,text:'How many sacks?',c:'40',w:['4','400','14'],
+  crow:'No loose sacks. So four!',                    check:'Four bundles of ten make forty.'},
+ {kind:'tens',t:6,o:8,text:'How many sacks?',c:'68',w:['14','86','608'],
+  crow:'Six and eight. Fourteen!',                    check:'Six tens is sixty. Then add eight.'},
+ {kind:'ask',big:'47',text:'How many full bundles?',c:'4',w:['7','47','11'],
+  crow:'Seven! Seven is right there in 47.',          check:'The first digit counts the bundles.'},
+ {kind:'ask',big:'30',text:'How many loose sacks?',c:'0',w:['3','30','10'],
+  crow:'Three loose sacks. I can see three!',         check:'30 is three full bundles, none loose.'}
+],
+3:[
+ {kind:'group',g:5,per:10,item:'crate',text:'5 crates. 10 mangoes each.',c:'50',w:['5','15','10'],hi:'आम',
+  crow:'Five crates. So five mangoes!',               check:'Count in tens: 10, 20, 30, 40, 50.'},
+ {kind:'seq',seq:[5,10,15,null,25],text:'Which number is missing?',c:'20',w:['16','30','21'],
+  crow:'Sixteen. After fifteen comes sixteen.',       check:'This jumps by five, not by one.'},
+ {kind:'group',g:6,per:2,item:'crate',text:'6 crates. 2 pumpkins each.',c:'12',w:['8','6','10'],
+  crow:'Six and two. Eight!',                         check:'Count in twos, six times.'},
+ {kind:'seq',seq:[10,20,30,null,50],text:'Which number is missing?',c:'40',w:['31','45','35'],
+  crow:'Thirty-one. Just add one more.',              check:'This jumps by ten each time.'},
+ {kind:'group',g:7,per:5,item:'sack',text:'7 sacks. 5 potatoes each.',c:'35',w:['12','7','30'],hi:'आलू',
+  crow:'Seven and five. Twelve!',                     check:'Count in fives, seven times.'},
+ {kind:'seq',seq:[2,4,6,null,10],text:'Which number is missing?',c:'8',w:['7','9','12'],
+  crow:'Seven. Seven comes after six.',               check:'This jumps by two each time.'}
+],
+4:[
+ {kind:'vs',a:48,b:52,text:'Which truck carries more?',c:'52',
+  crow:'Forty-eight! Eight beats two.',               check:'Look at the tens first, not the ones.'},
+ {kind:'vs',a:9,b:12,text:'Which truck carries more?',c:'12',
+  crow:'Nine! Nine is big, one is small.',            check:'12 has one ten. Nine has no ten.'},
+ {kind:'sign',a:36,b:63,text:'Which sign fits?',c:'<',w:['>','='],
+  crow:'Same digits both sides. So equal!',           check:'3 tens is less than 6 tens.'},
+ {kind:'vs',a:70,b:67,text:'Which truck carries more?',c:'70',
+  crow:'Sixty-seven! It has a six and a seven.',      check:'Seven tens beats six tens.'},
+ {kind:'sign',a:45,b:45,text:'Which sign fits?',c:'=',w:['<','>'],
+  crow:'The left one is bigger. Left is first!',      check:'Same tens, same ones. Both equal.'},
+ {kind:'vs',a:100,b:99,text:'Which truck carries more?',c:'100',hi:'सौ',
+  crow:'Ninety-nine! Nine is the biggest digit.',     check:'100 is one more than 99.'}
+],
+5:[
+ {kind:'calc',a:23,b:14,op:'+',text:'Load both piles. How many?',c:'37',w:['64','73','36'],hi:'जोड़',
+  crow:'Two and four is six. Three and one is four. Sixty-four!',
+  check:'Ones go under ones. Add 3 and 4.'},
+ {kind:'calc',a:27,b:15,op:'+',text:'Load both piles. How many?',c:'42',w:['312','32','43'],
+  crow:'Seven and five is twelve. Two and one is three. Three hundred twelve!',
+  check:'Twelve ones is one ten, two ones.'},
+ {kind:'calc',a:34,b:28,op:'+',text:'Load both piles. How many?',c:'62',w:['52','512','61'],
+  crow:'Fifty-two. No carrying needed here.',         check:'Carry the extra ten to the tens.'},
+ {kind:'calc',a:45,b:30,op:'+',text:'Load both piles. How many?',c:'75',w:['70','78','715'],
+  crow:'Adding zero makes ones vanish. Seventy!',     check:'Five ones plus zero is five ones.'},
+ {kind:'calc',a:19,b:19,op:'+',text:'Load both piles. How many?',c:'38',w:['28','218','37'],
+  crow:'Twenty-eight. I never carry anything.',       check:'Eighteen ones is one ten, eight ones.'},
+ {kind:'calc',a:56,b:7,op:'+',text:'Load both piles. How many?',c:'63',w:['126','53','64'],
+  crow:'Seven goes under the five. One hundred twenty-six!',
+  check:'Seven is ones. Put it under six.'}
+],
+6:[
+ {kind:'calc',a:46,b:23,op:'−',text:'Unload some. How many left?',c:'23',w:['41','25','33'],hi:'बाकी',
+  crow:'Six take two is four. Four take three is one. Forty-one!',
+  check:'Ones under ones. Six take three.'},
+ {kind:'calc',a:42,b:18,op:'−',text:'Unload some. How many left?',c:'24',w:['36','34','26'],
+  crow:'Eight take two is six. Thirty-six!',          check:'You cannot take 8 from 2. Borrow a ten.'},
+ {kind:'calc',a:50,b:16,op:'−',text:'Unload some. How many left?',c:'34',w:['40','44','46'],
+  crow:'Nothing take six is nothing. Forty!',         check:'Borrow a ten. Ten take six is four.'},
+ {kind:'calc',a:38,b:12,op:'−',text:'Unload some. How many left?',c:'26',w:['50','24','36'],
+  crow:'Fifty! Numbers should always grow bigger.',   check:'Take away means count backwards.'},
+ {kind:'calc',a:63,b:29,op:'−',text:'Unload some. How many left?',c:'34',w:['46','44','36'],
+  crow:'Nine take three is six. Forty-six!',          check:'Borrow a ten from the sixty.'},
+ {kind:'calc',a:80,b:45,op:'−',text:'Unload some. How many left?',c:'35',w:['45','55','44'],
+  crow:'Zero take five is five. Forty-five!',         check:'Borrow a ten. Ten take five is five.'}
+],
+7:[
+ {kind:'calc',a:18,b:12,op:'+',rs:true,text:'Tomatoes ₹18. Potatoes ₹12.',c:'₹30',w:['₹20','₹210','₹29'],hi:'रुपये',
+  crow:'One and one is two. Eight and two is zero. Twenty!',
+  check:'Ten ones make one more ten.'},
+ {kind:'money',art:'sarita',pay:50,cost:35,text:'Pay ₹50. Cost ₹35. Change?',c:'₹15',w:['₹85','₹25','₹20'],hi:'छुट्टा',
+  crow:'Change means add them. Eighty-five!',         check:'Change is the money left over.'},
+ {kind:'coins',want:35,text:'Which coins make ₹35?',c:'₹20 + ₹10 + ₹5',
+  w:['₹50','₹20 + ₹20','₹10 + ₹10 + ₹10'],
+  crow:'Take the biggest coin. Fifty!',               check:'Fifty is more than thirty-five.'},
+ {kind:'money',art:'chacha',pay:100,cost:65,text:'Pay ₹100. Cost ₹65. Change?',c:'₹35',w:['₹45','₹165','₹25'],
+  crow:'Hundred take sixty-five. Forty-five!',        check:'Count up from 65 to 100.'},
+ {kind:'money',art:'bittu',price:20,qty:3,text:'3 kg onions. ₹20 each kg.',c:'₹60',w:['₹23','₹203','₹40'],hi:'किलो',
+  crow:'Three and twenty. Twenty-three rupees!',      check:'Count twenty three times: 20, 40, 60.'},
+ {kind:'calc',a:45,b:38,op:'+',rs:true,text:'Sold ₹45 and ₹38 today.',c:'₹83',w:['₹73','₹713','₹82'],
+  crow:'Seventy-three. Carrying is extra work.',      check:'Thirteen ones is one ten, three ones.'}
+],
+8:[
+ {kind:'word',art:'rani',text:'Truck has 24 crates. Sells 9. Left?',c:'15',w:['33','16','14'],
+  crow:'Thirty-three! Adding is always safe.',        check:'Sells means fewer. Take away nine.'},
+ {kind:'word',art:'chacha',text:'4 sacks. Each 10 kg. Total weight?',c:'40 kg',w:['14 kg','4 kg','410 kg'],hi:'किलो',
+  crow:'Four and ten. Fourteen kilos!',               check:'Count in tens four times.'},
+ {kind:'word',art:'bittu',text:'Bittu loads 18, then 15 more.',c:'33',w:['23','313','32'],
+  crow:'Twenty-three. No carrying today.',            check:'Thirteen ones is one ten, three ones.'},
+ {kind:'word',art:'rani',text:'Truck had 50 crates. Unloaded 18.',c:'32',w:['68','48','42'],
+  crow:'Sixty-eight! More stops, more crates.',       check:'Unloaded means gone. Take away.'},
+ {kind:'word',art:'sarita',text:'Pay ₹100. Vegetables cost ₹72.',c:'₹28',w:['₹172','₹38','₹32'],hi:'सब्ज़ी',
+  crow:'One hundred seventy-two rupees change!',      check:'Change is what comes back to you.'},
+ {kind:'word',art:'golu',text:'Sold 35 kg morning, 28 kg evening.',c:'63 kg',w:['53 kg','513 kg','62 kg'],
+  crow:'Fifty-three kilos. I never carry.',           check:'Thirteen ones is one ten, three ones.'}
+]
+};
+
+/* =========================================================
+   QUESTION BUILD
+   ========================================================= */
+let cur=null;
+const shuffle=a=>{const b=a.slice();for(let i=b.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[b[i],b[j]]=[b[j],b[i]];}return b;};
+function buildQuestions(lv){
+  return QS[lv].map(q=>{
+    const o=Object.assign({},q);
+    if(q.kind==='vs'){
+      o.opts=[String(q.a),String(q.b)];
+      o.ans=o.opts.indexOf(q.c);
+    } else if(q.w){
+      const all=shuffle([q.c].concat(q.w));
+      o.opts=all; o.ans=all.indexOf(q.c);
+    }
+    return o;
+  });
+}
+
+/* =========================================================
+   SETUP
+   ========================================================= */
+let pickedHat='gamcha';
+function renderSetup(){
+  document.getElementById('setup').innerHTML=
+    '<div style="max-width:190px;margin:0 auto">'+crowArt('smug',pickedHat)+'</div>'+
+    '<h2>A crow rides on our truck.</h2>'+
+    '<p>He says nobody at the mandi can count. He grabs a coin every time we get it wrong.</p>'+
+    '<p>Rani, Bittu, Sarita didi, Chacha and Golu need you. Win his coins!</p>'+
+    '<h2 style="margin-top:18px">What is his name?</h2>'+
+    '<input class="nameinput" id="nameinput" maxlength="18" placeholder="Anshu decides…" value="'+(S.name||'')+'">'+
+    '<h2 style="margin-top:18px">Give him something</h2>'+
+    '<div class="hats">'+hatBtn('gamcha','Gamcha')+hatBtn('topi','Blue topi')+hatBtn('specs','Sunglasses')+'</div>'+
+    '<button class="btn green" onclick="finishSetup()">Start the truck ▶</button>';
+}
+function hatBtn(kind,label){
+  return '<div class="hatbtn'+(pickedHat===kind?' sel':'')+'" onclick="pickHat(\''+kind+'\')">'+
+    '<svg viewBox="0 0 140 130" xmlns="http://www.w3.org/2000/svg">'+
+    '<ellipse cx="70" cy="78" rx="42" ry="38" fill="#454C63" stroke="#22201D" stroke-width="4"/>'+
+    '<circle cx="56" cy="72" r="7" fill="#fff" stroke="#22201D" stroke-width="2.5"/>'+
+    '<circle cx="86" cy="72" r="7" fill="#fff" stroke="#22201D" stroke-width="2.5"/>'+
+    '<circle cx="57" cy="72" r="3" fill="#22201D"/><circle cx="87" cy="72" r="3" fill="#22201D"/>'+
+    hatArt(kind)+'</svg><div>'+label+'</div></div>';
+}
+function pickHat(k){
+  const inp=document.getElementById('nameinput');
+  if(inp) S.name=inp.value.trim();
+  pickedHat=k; renderSetup();
+}
+function finishSetup(){
+  S.name=document.getElementById('nameinput').value.trim();
+  S.hat=pickedHat; save();
+  document.getElementById('setup').style.display='none';
+  goMenu();
+}
+
+/* =========================================================
+   MENU
+   ========================================================= */
+function totalCoins(){ let t=0; for(const k in S.best) t+=S.best[k]; return t; }
+function renderMenu(){
+  let s='<div class="storystrip">'+crowArt('smug')+
+    '<div><div class="t">'+cName()+' says:</div>'+
+    '<div class="n">"Nobody at this mandi can count. Nobody!"</div></div></div>'+
+    '<div id="coinbar"><div class="big">Coins won: ₹'+totalCoins()+'</div></div>'+
+    '<div class="friends"><h3>Your mandi crew</h3><div class="friendrow">'+
+    CAST.map(c=>'<div class="friend">'+castArt(c.id)+'<div>'+c.name+'</div></div>').join('')+
+    '</div></div><p class="note">Finish a level to open the next one.</p><div>';
+  LEVELS.forEach((L,idx)=>{
+    const open=L.n<=S.unlocked, b=S.best[L.n]||0;
+    s+='<div class="levelcard'+(open?'':' locked')+(b?' done':'')+'" style="animation-delay:'+(idx*45)+'ms"'+
+      (open?' onclick="startLevel('+L.n+')" tabindex="0" onkeydown="if(event.key===\'Enter\')startLevel('+L.n+')"':'')+'>'+
+      '<div class="num">'+L.n+'</div><div class="info"><div class="title">'+L.name+'</div>'+
+      '<div class="sub">'+L.sub+'</div>'+(b?'<div class="sub">₹'+b+' won</div>':'')+'</div>'+
+      '<div class="go">'+(open?'▶️':'🔒')+'</div></div>';
+  });
+  s+='</div><div class="whybox"><h3>Why count well?</h3>'+
+     '<p>🚚 So no crate goes missing.</p>'+
+     '<p>⚖️ So the sacks weigh right.</p>'+
+     '<p>💰 So the change is correct.</p>'+
+     '<p>📒 So the day\'s money adds up.</p></div>'+
+     '<div class="resetline"><button onclick="resetAll()">Start again from the beginning</button></div>';
+  document.getElementById('menu').innerHTML=s;
+}
+function resetAll(){
+  if(!confirm('Clear all coins and start again?')) return;
+  S={name:'',hat:'gamcha',unlocked:1,best:{}}; save();
+  document.getElementById('menu').style.display='none';
+  document.getElementById('setup').style.display='block';
+  pickedHat='gamcha'; renderSetup();
+}
+function show(w){
+  document.getElementById('menu').style.display = w==='menu' ? (window.innerWidth>=760?'grid':'block') : 'none';
+  document.getElementById('play').style.display  = w==='play' ?'block':'none';
+  document.getElementById('score').style.display = w==='score'?'block':'none';
+  closeModal(); window.scrollTo(0,0);
+}
+function goMenu(){ renderMenu(); show('menu'); }
+
+/* =========================================================
+   CROW POP-UP
+   ========================================================= */
+function openModal(q){
+  document.getElementById('mart').innerHTML=crowArt('smug');
+  document.getElementById('mwho').textContent=cName()+' says';
+  document.getElementById('men').textContent=q.crow||'This is wrong. The crate is broken.';
+  document.getElementById('mchecken').textContent=q.check||'Look at one number at a time.';
+  document.getElementById('modal').className='show';
+  setTimeout(()=>{const b=document.getElementById('mclose'); if(b) b.focus();},120);
+}
+function closeModal(){ const m=document.getElementById('modal'); if(m) m.className=''; }
+document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeModal(); });
+
+/* =========================================================
+   PLAY
+   ========================================================= */
+function startLevel(n){
+  cur={lv:n,qs:buildQuestions(n),i:0,firstTry:0,tries:0};
+  document.getElementById('levelno').textContent='LEVEL '+n;
+  document.getElementById('levelname').textContent=LEVELS[n-1].name;
+  show('play'); renderQuestion();
+}
+function replayLevel(){ startLevel(cur.lv); }
+function renderDots(){
+  let s='';
+  for(let k=0;k<cur.qs.length;k++) s+='<span class="'+(k<cur.i?'on':(k===cur.i?'now':''))+'"></span>';
+  document.getElementById('dots').innerHTML=s;
+  document.getElementById('qcount').textContent=(cur.i+1)+' / '+cur.qs.length;
+}
+function optsHTML(opts,wide,cls){
+  return '<div class="opts'+(wide?' wide':'')+'">'+
+    opts.map((o,k)=>'<button class="opt'+(cls?' '+cls:'')+'" data-k="'+k+'">'+o+'</button>').join('')+'</div>';
+}
+function ask(text,art){
+  return art ? '<div class="scene"><div class="art">'+castArt(art)+'</div><p class="qtext">'+text+'</p></div>'
+             : '<p class="qtext">'+text+'</p>';
+}
+
+/* ---- stage builders ---- */
+function stageCount(q){
+  const per=Math.ceil(q.n/q.rows);
+  let s='<div class="stage">';
+  let left=q.n;
+  for(let r=0;r<q.rows;r++){
+    s+='<div class="rowline">';
+    for(let c=0;c<per&&left>0;c++,left--) s+='<div class="crate">'+crateArt()+'</div>';
+    s+='</div>';
+  }
+  return s+'<div class="counter" id="counter">Tapped: 0</div></div>';
+}
+function stageTens(q){
+  let s='<div class="stage"><div class="stagelabel">Bundles of ten + loose</div><div class="tenrow">';
+  for(let i=0;i<q.t;i++) s+='<div class="bundle">'+bundleArt()+'</div>';
+  for(let i=0;i<q.o;i++) s+='<div class="single">'+sackArt()+'</div>';
+  return s+'</div></div>';
+}
+function stageBig(q){
+  return '<div class="stage"><div class="stagelabel">Sacks on the truck</div>'+
+    '<div style="font-family:Fredoka,sans-serif;font-weight:700;font-size:3.4rem;color:#0A5F5E">'+q.big+'</div></div>';
+}
+function stageGroup(q){
+  let s='<div class="stage"><div class="tenrow">';
+  for(let i=0;i<q.g;i++){
+    s+='<div style="text-align:center">'+
+       '<div style="width:46px">'+(q.item==='sack'?sackArt():crateArt())+'</div>'+
+       '<div style="font-family:Fredoka,sans-serif;font-weight:700;color:#E23E7C">'+q.per+'</div></div>';
+  }
+  return s+'</div></div>';
+}
+function stageSeq(q){
+  let s='<div class="stage"><div class="seq">';
+  q.seq.forEach(v=>{ s+='<b class="'+(v===null?'blank':'')+'">'+(v===null?'?':v)+'</b>'; });
+  return s+'</div></div>';
+}
+function stageCalc(q){
+  const pre=q.rs?'₹':'';
+  return '<div class="stage"><div class="sums">'+
+    '<div class="colhead">TENS &nbsp; ONES</div>'+
+    '<div>'+pre+q.a+'</div>'+
+    '<div><span class="op">'+q.op+'</span> '+pre+q.b+'</div>'+
+    '<div class="bar">?</div></div></div>';
+}
+function stageVs(q){
+  return '<div class="stage"><div class="vs">'+
+    '<div class="truckcard" data-v="'+q.a+'">'+truckArt()+'<b>'+q.a+'</b></div>'+
+    '<div class="gap">?</div>'+
+    '<div class="truckcard" data-v="'+q.b+'">'+truckArt()+'<b>'+q.b+'</b></div></div></div>';
+}
+function stageSign(q){
+  return '<div class="stage"><div class="vs">'+
+    '<div style="flex:1;font-family:Fredoka,sans-serif;font-weight:700;font-size:2.6rem">'+q.a+'</div>'+
+    '<div class="gap">▢</div>'+
+    '<div style="flex:1;font-family:Fredoka,sans-serif;font-weight:700;font-size:2.6rem">'+q.b+'</div>'+
+    '</div></div>';
+}
+function stageMoney(q){
+  let s='<div class="stage"><div class="tags">';
+  if(q.pay)  s+='<div class="tag2">Pay ₹'+q.pay+'</div>';
+  if(q.cost) s+='<div class="tag2" style="background:#fff">Cost ₹'+q.cost+'</div>';
+  if(q.price)s+='<div class="tag2">₹'+q.price+' per kg</div><div class="tag2" style="background:#fff">'+q.qty+' kg</div>';
+  return s+'</div></div>';
+}
+function stageCoins(q){
+  return '<div class="stage"><div class="tags"><div class="tag2">Need ₹'+q.want+'</div></div></div>';
+}
+
+function renderQuestion(){
+  const q=cur.qs[cur.i];
+  cur.tries=0; renderDots(); closeModal();
+  const f=document.getElementById('feedback'); f.innerHTML=''; f.className='feedback';
+  document.getElementById('nextbtn').style.display='none';
+  const area=document.getElementById('qarea');
+  area.style.animation='none'; void area.offsetWidth; area.style.animation='';
+
+  let stage='';
+  if(q.kind==='count')      stage=stageCount(q);
+  else if(q.kind==='tens')  stage=stageTens(q);
+  else if(q.kind==='ask')   stage=stageBig(q);
+  else if(q.kind==='group') stage=stageGroup(q);
+  else if(q.kind==='seq')   stage=stageSeq(q);
+  else if(q.kind==='calc')  stage=stageCalc(q);
+  else if(q.kind==='vs')    stage=stageVs(q);
+  else if(q.kind==='sign')  stage=stageSign(q);
+  else if(q.kind==='money') stage=stageMoney(q);
+  else if(q.kind==='coins') stage=stageCoins(q);
+
+  if(q.kind==='vs'){
+    area.innerHTML='<div class="qgrid"><div>'+stage+'</div><div>'+ask(q.text,q.art)+'</div></div>';
+    let count=0;
+    area.querySelectorAll('.truckcard').forEach(el=>{
+      el.addEventListener('click',()=>{
+        if(el.dataset.done) return;
+        if(el.getAttribute('data-v')===q.c){
+          el.classList.add('right'); flyCoin(el);
+          area.querySelectorAll('.truckcard').forEach(x=>x.dataset.done='1');
+          markRight(q.c+' is bigger.',q.hi);
+        } else { el.classList.add('wrong'); el.dataset.done='1'; markWrong(q); }
+      });
+    });
+    return;
+  }
+
+  const wide=(q.kind==='coins');
+  const cls=(q.kind==='sign')?'sign':'';
+  area.innerHTML='<div class="qgrid"><div>'+stage+'</div><div>'+ask(q.text,q.art)+
+    optsHTML(q.opts,wide,cls)+'</div></div>';
+  bindOpts(q);
+
+  if(q.kind==='count'){
+    let n=0;
+    area.querySelectorAll('.crate').forEach(el=>{
+      el.addEventListener('click',()=>{
+        el.classList.toggle('tapped');
+        n+=el.classList.contains('tapped')?1:-1;
+        document.getElementById('counter').textContent='Tapped: '+n;
+      });
+    });
+  }
+}
+function bindOpts(q){
+  document.querySelectorAll('#qarea .opt').forEach(b=>{
+    b.addEventListener('click',()=>{
+      const k=parseInt(b.getAttribute('data-k'),10);
+      if(k===q.ans){
+        b.classList.add('right');
+        document.querySelectorAll('#qarea .opt').forEach(x=>x.disabled=true);
+        flyCoin(b); markRight(afterLine(q),q.hi);
+      } else { b.classList.add('wrong'); b.disabled=true; markWrong(q); }
+    });
+  });
+}
+function afterLine(q){
+  if(q.kind==='tens') return q.t+' tens and '+q.o+' ones is '+q.c+'.';
+  if(q.kind==='calc') return q.a+' '+q.op+' '+q.b+' = '+q.c;
+  if(q.kind==='sign') return q.a+' '+q.c+' '+q.b;
+  if(q.kind==='group')return q.g+' × '+q.per+' = '+q.c;
+  return q.c;
+}
+function flyCoin(fromEl){
+  if(!fromEl) return;
+  const app=document.getElementById('app'), r=fromEl.getBoundingClientRect(), a=app.getBoundingClientRect();
+  for(let i=0;i<3;i++){
+    const b=document.createElement('div');
+    b.className='flycoin'; b.textContent='₹';
+    b.style.left=(r.left-a.left+r.width/2-15)+'px';
+    b.style.top =(r.top -a.top +r.height/2-15)+'px';
+    b.style.setProperty('--dx',((i-1)*46)+'px');
+    b.style.animationDelay=(i*90)+'ms';
+    app.appendChild(b);
+    setTimeout(()=>b.remove(),1400);
+  }
+}
+function markRight(extra,hindi){
+  const f=document.getElementById('feedback');
+  f.className='feedback good';
+  let t=(cur.tries===0?'Correct! One coin from '+cName()+'.':'Correct! He was wrong again.');
+  if(extra) t+='<br>'+extra;
+  if(hindi) t+=' <span class="hindiword">('+hindi+')</span>';
+  f.innerHTML=t;
+  if(cur.tries===0) cur.firstTry++;
+  closeModal();
+  const b=document.getElementById('nextbtn');
+  b.style.display='block';
+  b.textContent=(cur.i===cur.qs.length-1)?'Finish level ▶':'Next ▶';
+}
+function markWrong(q){
+  cur.tries++;
+  const f=document.getElementById('feedback');
+  f.className='feedback again'; f.textContent='Not that one. Try again.';
+  openModal(q||{});
+}
+function nextQuestion(){
+  cur.i++;
+  if(cur.i>=cur.qs.length){ finishLevel(); return; }
+  renderQuestion();
+}
+
+/* =========================================================
+   SCORE
+   ========================================================= */
+function finishLevel(){
+  const total=cur.qs.length, got=cur.firstTry;
+  if(!S.best[cur.lv]||got>S.best[cur.lv]) S.best[cur.lv]=got;
+  if(cur.lv===S.unlocked&&S.unlocked<LEVELS.length) S.unlocked=cur.lv+1;
+  save();
+  let cs='';
+  for(let i=0;i<got;i++) cs+='<i style="animation-delay:'+(i*90)+'ms">₹</i>';
+  document.getElementById('coins').innerHTML=got>0?cs:'<i style="background:#fff">0</i>';
+  document.getElementById('scorehead').textContent='Level '+cur.lv+' done!';
+  document.getElementById('scoretext').textContent=
+    'You won '+got+' coins out of '+total+'.'+
+    (cur.lv<LEVELS.length?' Level '+(cur.lv+1)+' is open now.':' You finished every level!');
+  let mk,mood;
+  if(got===total){ mood='sad'; mk='All of them?! Fine, FINE. Take my coins. I still ride this truck.'; }
+  else if(got>=Math.ceil(total*0.6)){ mood='sad'; mk='Hmph. You got most of them. Lucky day. Play again, I will win.'; }
+  else { mood='smug'; mk='HA! My coins stay with me. Come back when you can count, little one.'; }
+  document.getElementById('crowsays').innerHTML=
+    '<div class="mtop"><div class="art">'+crowArt(mood)+'</div><div style="flex:1">'+
+    '<div class="mwho">'+cName()+' says</div><div class="msay"><div class="en">'+mk+'</div></div></div></div>';
+  show('score');
+}
+
+/* keyboard: 1-4 pick an option, Enter goes next */
+document.addEventListener('keydown',e=>{
+  if(document.getElementById('play').style.display!=='block') return;
+  if(document.getElementById('modal').className==='show') return;
+  const btns=document.querySelectorAll('#qarea .opt');
+  const k=parseInt(e.key,10);
+  if(btns.length&&k>=1&&k<=btns.length&&!btns[k-1].disabled) btns[k-1].click();
+  if(e.key==='Enter'){ const nb=document.getElementById('nextbtn'); if(nb.style.display==='block') nb.click(); }
+});
+
+/* =========================================================
+   BOOT
+   ========================================================= */
+load();
+pickedHat=S.hat||'gamcha';
+if(S.name){ document.getElementById('setup').style.display='none'; goMenu(); }
+else { renderSetup(); }
+</script>
+</body>
+</html>
