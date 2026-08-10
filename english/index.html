@@ -1,0 +1,1048 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Robot Repair Shed — Anshu's English</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bungee&family=Rubik:wght@500;700;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --tin:#E6ECEF;
+    --tin2:#CFD9DF;
+    --steel:#8FA2AE;
+    --oil:#262C31;
+    --rust:#A8481B;
+    --rust2:#DE7638;
+    --brass:#E8A72C;
+    --hazard:#F2C230;
+    --ok:#2E7D4F;
+    --no:#C1392B;
+    --panel:#FFFFFF;
+    --ink:#1F2429;
+    --mute:#7C8994;
+    --head:'Bungee',system-ui,sans-serif;
+    --body:'Rubik',system-ui,sans-serif;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; font-family:var(--body); color:var(--ink);
+    background:
+      repeating-linear-gradient(90deg, rgba(0,0,0,.20) 0 2px, transparent 2px 14px),
+      linear-gradient(180deg,#39424A,#20262B);
+    display:flex; justify-content:center; min-height:100vh;
+    -webkit-tap-highlight-color:transparent;
+  }
+  #app{
+    width:100%; max-width:470px; min-height:100vh; position:relative; overflow:hidden;
+    background:
+      radial-gradient(circle at 82% 12%, rgba(168,72,27,.13), transparent 34%),
+      radial-gradient(circle at 8% 78%, rgba(168,72,27,.10), transparent 30%),
+      repeating-linear-gradient(90deg, rgba(143,162,174,.22) 0 3px, transparent 3px 18px),
+      var(--tin);
+    border-left:5px solid var(--oil); border-right:5px solid var(--oil);
+  }
+
+  /* ---------- shed roof ---------- */
+  header{background:var(--oil); color:#fff; text-align:center; padding:13px 44px 15px; position:relative;}
+  header .tag{font-family:var(--head); font-size:.62rem; letter-spacing:4px; color:var(--brass);}
+  header h1{margin:4px 0 0; font-family:var(--head); font-size:1.32rem; line-height:1.15;
+    text-shadow:2px 2px 0 var(--rust);}
+  .hazard{height:13px; background:repeating-linear-gradient(45deg,
+    var(--hazard) 0 14px, var(--oil) 14px 28px); border-bottom:3px solid var(--oil);}
+  #soundbtn{position:absolute; top:10px; right:10px; width:38px; height:38px; border-radius:10px;
+    border:3px solid var(--steel); background:#3A444C; color:#fff; font-size:1.1rem; cursor:pointer;}
+  #soundbtn.off{opacity:.5;}
+
+  h2{font-family:var(--head); color:var(--rust); font-size:1.06rem; margin:14px 0 6px; line-height:1.3;}
+
+  /* rivet plate — used everywhere */
+  .plate{background:
+      radial-gradient(circle at 9px 9px, var(--tin2) 3px, transparent 3.6px),
+      radial-gradient(circle at calc(100% - 9px) 9px, var(--tin2) 3px, transparent 3.6px),
+      radial-gradient(circle at 9px calc(100% - 9px), var(--tin2) 3px, transparent 3.6px),
+      radial-gradient(circle at calc(100% - 9px) calc(100% - 9px), var(--tin2) 3px, transparent 3.6px),
+      var(--panel);
+    border:3px solid var(--oil); border-radius:6px;}
+
+  /* ---------- setup ---------- */
+  #setup{padding:16px 16px 28px; text-align:center;}
+  #setup p{font-size:1.05rem; line-height:1.55; margin:6px 0; font-weight:500;}
+  .nameinput{width:100%; padding:13px; font-family:var(--head); font-size:1.1rem;
+    border:3px solid var(--oil); border-radius:6px; text-align:center; background:#fff; color:var(--ink);}
+  .paints{display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; margin-top:10px;}
+  .paintbtn{background:#fff; border:3px solid var(--oil); border-radius:6px; padding:6px 2px; cursor:pointer;}
+  .paintbtn.sel{border-color:var(--rust); box-shadow:0 0 0 3px rgba(168,72,27,.28);}
+  .paintbtn svg{width:100%; height:60px;}
+  .paintbtn div{font-family:var(--head); font-size:.6rem; letter-spacing:1px; margin-top:2px;}
+
+  /* ---------- menu ---------- */
+  #menu{padding:14px 14px 24px;}
+  .saystrip{display:flex; gap:10px; align-items:center; padding:10px; margin-bottom:10px;}
+  .saystrip .rb{width:74px; flex:0 0 74px;}
+  .saystrip .rb svg{width:100%; height:74px;}
+  .saystrip .n{font-size:1.02rem; line-height:1.4; font-weight:700;}
+  .who{font-family:var(--head); font-size:.62rem; letter-spacing:2px; color:var(--rust); margin-bottom:2px;}
+
+  #boltbar{padding:9px; margin-bottom:12px; text-align:center;
+    display:flex; align-items:center; justify-content:center; gap:8px;}
+  #boltbar svg{width:26px; height:26px;}
+  #boltbar b{font-family:var(--head); font-size:1.15rem; color:var(--rust);}
+
+  .grid{display:grid; grid-template-columns:1fr 1fr; gap:9px;}
+  .lv{padding:10px 8px 12px; text-align:center; cursor:pointer;
+    box-shadow:3px 3px 0 rgba(31,36,41,.35); animation:rise .3s ease-out both;}
+  .lv:active{transform:translate(2px,2px); box-shadow:1px 1px 0 rgba(31,36,41,.35);}
+  .lv.locked{opacity:.42; cursor:default; box-shadow:none;}
+  .lv .num{font-family:var(--head); font-size:.62rem; letter-spacing:2px; color:var(--mute);}
+  .lv .title{font-family:var(--head); font-size:.86rem; color:var(--oil); line-height:1.25; margin:3px 0 4px;
+    min-height:2.2em; display:flex; align-items:center; justify-content:center;}
+  .lv .sub{font-size:.74rem; color:var(--mute); font-weight:700; line-height:1.25;}
+  .lv .won{font-family:var(--head); font-size:.7rem; color:var(--rust); margin-top:4px;}
+  .lv.done{background-color:#F3FAF5;}
+
+  .whybox{padding:12px 14px; margin-top:14px; border-style:dashed;}
+  .whybox h3{font-family:var(--head); color:var(--rust); margin:0 0 6px; font-size:.8rem; letter-spacing:1px;}
+  .whybox p{margin:0 0 5px; font-size:.95rem; font-weight:500;}
+  .resetline{text-align:center; margin-top:14px;}
+  .resetline button{background:none; border:none; color:var(--mute); font-weight:700;
+    font-size:.78rem; text-decoration:underline; cursor:pointer; font-family:var(--body);}
+
+  /* ---------- play ---------- */
+  #play{display:none; padding:10px 14px 30px;}
+  .meta{display:flex; justify-content:space-between; align-items:center; margin:10px 0 3px;
+    font-family:var(--head); font-size:.62rem; letter-spacing:2px; color:var(--mute);}
+  #levelname{font-family:var(--head); font-size:1.05rem; color:var(--rust); margin:0 0 8px;}
+  #dots{display:flex; gap:5px; margin-bottom:12px;}
+  #dots span{flex:1; height:9px; border:2px solid var(--oil); background:#fff; transition:background .3s;}
+  #dots span.on{background:var(--ok);}
+  #dots span.now{background:var(--brass); animation:blink 1.5s ease-in-out infinite;}
+  #qarea{animation:fadeIn .25s ease-out both;}
+
+  .stage{padding:10px; margin-bottom:10px; text-align:center;}
+  .stage svg.scene{width:100%; max-width:250px; height:auto;}
+  .countrow{display:flex; flex-wrap:wrap; justify-content:center; gap:6px;}
+  .countrow .ic{width:48px;} .countrow .ic svg{width:100%; height:48px; display:block;}
+  .bigic{width:112px; margin:0 auto;} .bigic svg{width:100%; height:112px; display:block;}
+  .answerchip{display:inline-block; margin-top:8px; background:var(--brass); border:3px solid var(--oil);
+    border-radius:6px; padding:5px 10px; font-weight:700; font-size:1rem;}
+  .caseplate{display:flex; justify-content:center; gap:18px; align-items:center;}
+  .caseplate div{font-family:var(--head); font-size:2.2rem;}
+  .caseplate .cap{color:var(--rust);} .caseplate .dot{color:var(--oil);}
+  .caselabel{font-family:var(--head); font-size:.58rem; letter-spacing:2px; color:var(--mute); margin-top:4px;}
+
+  /* robot speech */
+  .bubblewrap{display:flex; gap:8px; align-items:flex-start; margin-bottom:6px;}
+  .bubblewrap .rb{width:60px; flex:0 0 60px;}
+  .bubblewrap .rb svg{width:100%; height:60px;}
+  .bubble{flex:1; padding:9px 10px 11px; position:relative;}
+  .bubble:before{content:''; position:absolute; left:-11px; top:16px; width:0; height:0;
+    border:8px solid transparent; border-right-color:var(--oil);}
+
+  .sent{display:flex; flex-wrap:wrap; gap:6px; align-items:center;}
+  .wd{font-size:1.32rem; font-weight:700; padding:4px 7px; border-radius:5px; border:3px solid transparent;
+    line-height:1.2;}
+  .wd.tapme{border-color:var(--tin2); background:#F5F8FA; cursor:pointer;}
+  .wd.tapme:active{transform:translateY(2px);}
+  .wd.bad{border-color:var(--no); border-style:dashed; color:var(--no); background:#FDF1F0;}
+  .wd.fixed{background:var(--ok); border-color:var(--ok); color:#fff; animation:pop .35s ease-out;}
+  .wd.shake{animation:shake .35s;}
+  .wd.slot{border-color:var(--no); border-style:dashed; color:var(--no); min-width:34px; text-align:center;}
+  .prompt{font-family:var(--body); font-weight:900; font-size:1.06rem; color:var(--oil);
+    margin:12px 0 0; line-height:1.35;}
+  .flybolt svg, #bolts span svg{width:100%; height:100%; display:block;}
+
+  .opts{display:grid; grid-template-columns:1fr 1fr; gap:9px; margin-top:10px;}
+  .opts.three{grid-template-columns:1fr 1fr 1fr;}
+  .opt{border:3px solid var(--oil); border-radius:6px; padding:15px 4px; background:#fff;
+    font-family:var(--body); font-weight:700; font-size:1.2rem; cursor:pointer; color:var(--ink);
+    box-shadow:0 4px 0 rgba(31,36,41,.4); transition:transform .1s;}
+  .opt:active{transform:translateY(3px); box-shadow:0 1px 0 rgba(31,36,41,.4);}
+  .opt:focus-visible{outline:4px solid var(--rust); outline-offset:2px;}
+  .opt.right{background:var(--ok); color:#fff; animation:pop .35s ease-out;}
+  .opt.wrong{background:var(--no); color:#fff; animation:shake .35s ease-out;}
+  .opt.mark{font-size:2rem; padding:6px 4px;}
+
+  .feedback{text-align:center; margin:14px 0 0; min-height:26px;}
+  .feedback .line{font-family:var(--head); font-size:.86rem; color:var(--ok);}
+  .feedback .line.bad{color:var(--no);}
+  .fixedsent{font-size:1.2rem; font-weight:700; margin-top:6px;}
+  .hear{margin-top:8px; background:var(--brass); border:3px solid var(--oil); border-radius:6px;
+    padding:8px 14px; font-family:var(--head); font-size:.74rem; letter-spacing:1px; cursor:pointer;}
+  .hear.on{background:var(--ok); color:#fff;}
+  .warn{font-size:.78rem; color:var(--mute); font-weight:700; margin-top:6px;}
+
+  .btn{display:block; width:100%; border:3px solid var(--oil); border-radius:6px; padding:13px;
+    font-family:var(--head); font-size:.86rem; letter-spacing:1px; cursor:pointer;
+    background:var(--brass); color:var(--ink); box-shadow:0 4px 0 rgba(31,36,41,.45); margin-top:14px;}
+  .btn:active{transform:translateY(3px); box-shadow:0 1px 0 rgba(31,36,41,.45);}
+  .btn:focus-visible{outline:4px solid var(--rust); outline-offset:2px;}
+  .btn.go{background:var(--ok); color:#fff;}
+  .btn.plain{background:#fff;}
+
+  /* ---------- robot pop-up ---------- */
+  #modal{display:none; position:fixed; inset:0; z-index:60; background:rgba(20,25,29,.76);
+    padding:14px; align-items:center; justify-content:center;}
+  #modal.show{display:flex; animation:fadeIn .18s ease-out;}
+  .mcard{max-width:420px; width:100%; padding:14px; box-shadow:0 10px 0 rgba(0,0,0,.4);
+    animation:clank .4s cubic-bezier(.3,1.4,.5,1) both; max-height:94vh; overflow-y:auto;}
+  .mtop{display:flex; gap:10px; align-items:flex-start;}
+  .mtop .rb{width:88px; flex:0 0 88px;}
+  .mtop .rb svg{width:100%; height:88px; animation:buzz 1.4s ease-in-out infinite;}
+  .msay{border:3px solid var(--no); border-radius:6px; padding:8px 10px; margin-top:3px; background:#FDF1F0;}
+  .msay .en{font-weight:700; font-size:1.05rem; line-height:1.45;}
+  .mcheck{border:3px solid var(--ok); border-radius:6px; padding:8px 10px; margin-top:10px; background:#F1FAF4;}
+  .mcheck .who{color:var(--ok);}
+  .mcheck .en{font-weight:700; font-size:1.05rem; line-height:1.45;}
+
+  .flybolt{position:absolute; width:26px; height:26px; pointer-events:none; z-index:40;
+    animation:fly .95s ease-out forwards;}
+
+  /* ---------- score ---------- */
+  #score{display:none; padding:18px 16px 30px; text-align:center;}
+  #bolts{display:flex; flex-wrap:wrap; justify-content:center; gap:5px; margin:4px 0 10px;}
+  #bolts span{width:34px; height:34px; animation:drop .55s ease-out both;}
+  #scorehead{font-family:var(--head); color:var(--rust); font-size:1.05rem; margin:8px 0 6px;}
+  #scoretext{font-size:1rem; font-weight:700; line-height:1.5;}
+  #robotsays{margin-top:14px; text-align:left;}
+
+  footer{font-family:var(--head); font-size:.58rem; letter-spacing:3px; text-align:center;
+    color:var(--tin2); padding:11px; background:var(--oil);}
+
+  @keyframes fadeIn{from{opacity:0;}to{opacity:1;}}
+  @keyframes rise{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:none;}}
+  @keyframes pop{0%{transform:scale(1);}45%{transform:scale(1.1);}100%{transform:scale(1);}}
+  @keyframes shake{0%,100%{transform:translateX(0);}25%{transform:translateX(-5px);}
+                   50%{transform:translateX(5px);}75%{transform:translateX(-3px);}}
+  @keyframes blink{0%,100%{opacity:1;}50%{opacity:.4;}}
+  @keyframes buzz{0%,100%{transform:rotate(-4deg);}50%{transform:rotate(4deg);}}
+  @keyframes clank{0%{transform:translateY(-90%) rotate(-6deg);opacity:0;}
+                   100%{transform:translateY(0) rotate(0);opacity:1;}}
+  @keyframes fly{0%{transform:translate(0,0) scale(.6) rotate(0);opacity:1;}
+                 100%{transform:translate(var(--dx),-110px) scale(1.2) rotate(180deg);opacity:0;}}
+  @keyframes drop{from{transform:translateY(-30px);opacity:0;}to{transform:none;opacity:1;}}
+
+  @media (min-width:780px){
+    body{align-items:flex-start;}
+    #app{max-width:900px;}
+    header h1{font-size:1.7rem;}
+    #menu{padding:20px 26px 30px;}
+    .grid{grid-template-columns:1fr 1fr 1fr 1fr;}
+    .whybox{margin-top:18px;}
+    #play{padding:14px 26px 40px; }
+    #playgrid{display:grid; grid-template-columns:290px 1fr; gap:26px; align-items:start;}
+    .stage{margin-bottom:0;}
+    .wd{font-size:1.5rem;}
+    #setup{max-width:520px; margin:0 auto;}
+  }
+  @media (prefers-reduced-motion:reduce){
+    *{animation:none !important; transition:none !important;}
+  }
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <div class="tag">★ ANSHU MOTOR WORKS ★</div>
+    <h1>ROBOT REPAIR SHED</h1>
+    <button id="soundbtn" title="Sound on or off" onclick="toggleSound()">🔊</button>
+  </header>
+  <div class="hazard"></div>
+
+  <div id="setup"></div>
+  <div id="menu" style="display:none"></div>
+
+  <div id="play">
+    <button class="btn plain" onclick="goMenu()">◀ ALL JOBS</button>
+    <div class="meta"><span id="levelno"></span><span id="qcount"></span></div>
+    <div id="levelname"></div>
+    <div id="dots"></div>
+    <div id="qarea"></div>
+    <div class="feedback" id="feedback"></div>
+    <button class="btn go" id="nextbtn" style="display:none" onclick="nextQuestion()">NEXT ▶</button>
+  </div>
+
+  <div id="score">
+    <div id="bolts"></div>
+    <div id="scorehead"></div>
+    <div id="scoretext"></div>
+    <div id="robotsays"></div>
+    <button class="btn go" onclick="goMenu()">ALL JOBS</button>
+    <button class="btn plain" onclick="replayLevel()">FIX THIS ONE AGAIN</button>
+  </div>
+
+  <footer>MADE WITH PAPA ★ TOOLS DOWN AT SIX</footer>
+</div>
+
+<div id="modal" role="dialog" aria-modal="true">
+  <div class="mcard plate">
+    <div class="mtop">
+      <div class="rb" id="mart"></div>
+      <div style="flex:1">
+        <div class="who" id="mwho"></div>
+        <div class="msay"><div class="en" id="men"></div></div>
+      </div>
+    </div>
+    <div class="mcheck">
+      <div class="who">CHECK IT YOURSELF</div>
+      <div class="en" id="mchecken"></div>
+    </div>
+    <button class="btn go" id="mclose" onclick="closeModal()">I WILL FIX IT 🔧</button>
+  </div>
+</div>
+
+<script>
+/* =========================================================
+   SAVED PROGRESS
+   ========================================================= */
+const KEY='robot_shed_v1';
+let S={name:'', paint:'rust', unlocked:1, best:{}, sound:true};
+function save(){ try{ localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){} }
+function load(){ try{ const r=localStorage.getItem(KEY); if(r) S=Object.assign(S, JSON.parse(r)); }catch(e){} }
+function rName(){ return S.name || 'Tinku'; }
+
+/* =========================================================
+   SPEECH — tap to hear. Only correct English is ever spoken.
+   ========================================================= */
+const TTS={ok:('speechSynthesis' in window) && ('SpeechSynthesisUtterance' in window), voice:null, tried:false};
+function pickVoice(){
+  if(!TTS.ok) return;
+  const v=window.speechSynthesis.getVoices();
+  if(!v || !v.length) return;
+  const want=['en-IN','en-GB','en-AU','en-US'];
+  for(const w of want){ const f=v.find(x=>x.lang && x.lang.replace('_','-')===w); if(f){ TTS.voice=f; return; } }
+  const any=v.find(x=>x.lang && x.lang.toLowerCase().indexOf('en')===0);
+  if(any) TTS.voice=any;
+}
+if(TTS.ok){
+  pickVoice();
+  window.speechSynthesis.onvoiceschanged=pickVoice;
+}
+function say(text,btn){
+  if(!TTS.ok || !S.sound || !text) return;
+  try{
+    window.speechSynthesis.cancel();
+    const u=new SpeechSynthesisUtterance(text);
+    if(TTS.voice) u.voice=TTS.voice;
+    u.lang=TTS.voice?TTS.voice.lang:'en-IN';
+    u.rate=0.82; u.pitch=1.05; u.volume=1;
+    let started=false;
+    u.onstart=()=>{ started=true; if(btn) btn.classList.add('on'); };
+    u.onend=()=>{ if(btn) btn.classList.remove('on'); };
+    u.onerror=()=>{ if(btn) btn.classList.remove('on'); showSoundWarn(); };
+    window.speechSynthesis.speak(u);
+    setTimeout(()=>{ if(!started) showSoundWarn(); },1600);
+  }catch(e){ showSoundWarn(); }
+}
+function showSoundWarn(){
+  const w=document.getElementById('soundwarn');
+  if(w) w.textContent='No sound? Turn the phone volume up.';
+}
+function toggleSound(){
+  S.sound=!S.sound; save();
+  const b=document.getElementById('soundbtn');
+  b.textContent=S.sound?'🔊':'🔇';
+  b.className=S.sound?'':'off';
+  if(!S.sound && TTS.ok) window.speechSynthesis.cancel();
+}
+
+/* =========================================================
+   ARTWORK
+   ========================================================= */
+const PAINT={rust:'#DE7638', hazard:'#F2C230', steel:'#7FA6C4'};
+function boltSVG(){
+  return '<svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="bolt">'+
+    '<path d="M20 3 L34 11 L34 29 L20 37 L6 29 L6 11Z" fill="#E8A72C" stroke="#1F2429" stroke-width="3"/>'+
+    '<circle cx="20" cy="20" r="7" fill="#CFD9DF" stroke="#1F2429" stroke-width="3"/></svg>';
+}
+function robotArt(mood,paint){
+  const c=PAINT[paint||S.paint]||PAINT.rust;
+  let eyes,mouth;
+  if(mood==='oops'){
+    eyes='<circle cx="55" cy="63" r="8" fill="#fff" stroke="#1F2429" stroke-width="3"/>'+
+         '<circle cx="85" cy="63" r="8" fill="#fff" stroke="#1F2429" stroke-width="3"/>'+
+         '<circle cx="55" cy="66" r="3.5" fill="#1F2429"/><circle cx="85" cy="66" r="3.5" fill="#1F2429"/>'+
+         '<path d="M44 52 L64 58 M96 52 L76 58" stroke="#1F2429" stroke-width="3.5" stroke-linecap="round"/>';
+    mouth='<path d="M56 88 q14 -10 28 0" stroke="#1F2429" stroke-width="4" fill="none" stroke-linecap="round"/>';
+  } else {
+    eyes='<circle cx="55" cy="63" r="9" fill="#fff" stroke="#1F2429" stroke-width="3"/>'+
+         '<circle cx="85" cy="63" r="9" fill="#fff" stroke="#1F2429" stroke-width="3"/>'+
+         '<circle cx="57" cy="61" r="3.8" fill="#1F2429"/><circle cx="87" cy="61" r="3.8" fill="#1F2429"/>'+
+         '<path d="M44 50 q10 -6 20 -2 M96 50 q-10 -6 -20 -2" stroke="#1F2429" stroke-width="3.5" fill="none" stroke-linecap="round"/>';
+    mouth='<rect x="52" y="80" width="36" height="14" rx="3" fill="#1F2429"/>'+
+          '<path d="M57 84 v6 M65 84 v6 M73 84 v6 M81 84 v6" stroke="#8FA2AE" stroke-width="2.5"/>';
+  }
+  return '<svg viewBox="0 0 140 130" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="the robot">'+
+    '<path d="M70 22 V8" stroke="#1F2429" stroke-width="4"/>'+
+    '<circle cx="70" cy="6" r="6" fill="#F2C230" stroke="#1F2429" stroke-width="3"/>'+
+    '<rect x="16" y="52" width="16" height="26" rx="4" fill="#8FA2AE" stroke="#1F2429" stroke-width="3.5"/>'+
+    '<rect x="108" y="52" width="16" height="26" rx="4" fill="#8FA2AE" stroke="#1F2429" stroke-width="3.5"/>'+
+    '<rect x="30" y="22" width="80" height="86" rx="12" fill="'+c+'" stroke="#1F2429" stroke-width="4"/>'+
+    '<rect x="40" y="34" width="60" height="60" rx="8" fill="#EFF4F7" stroke="#1F2429" stroke-width="3"/>'+
+    '<circle cx="37" cy="29" r="3" fill="#1F2429"/><circle cx="103" cy="29" r="3" fill="#1F2429"/>'+
+    '<circle cx="37" cy="101" r="3" fill="#1F2429"/><circle cx="103" cy="101" r="3" fill="#1F2429"/>'+
+    eyes+mouth+
+    '<rect x="52" y="112" width="36" height="10" rx="3" fill="#8FA2AE" stroke="#1F2429" stroke-width="3"/></svg>';
+}
+
+/* ---- object icons, viewBox 0 0 100 100 ---- */
+function icon(kind){
+  const o='<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="'+kind+'">';
+  const S3='stroke="#1F2429" stroke-width="3.5"';
+  const S2='stroke="#1F2429" stroke-width="2.5"';
+  switch(kind){
+    case 'cat': return o+
+      '<path d="M26 34 L22 12 L44 26Z" fill="#B9A48C" '+S3+'/>'+
+      '<path d="M74 34 L78 12 L56 26Z" fill="#B9A48C" '+S3+'/>'+
+      '<circle cx="50" cy="56" r="30" fill="#C9B49A" '+S3+'/>'+
+      '<circle cx="39" cy="52" r="5.5" fill="#fff" '+S2+'/><circle cx="61" cy="52" r="5.5" fill="#fff" '+S2+'/>'+
+      '<circle cx="40" cy="53" r="2.6" fill="#1F2429"/><circle cx="62" cy="53" r="2.6" fill="#1F2429"/>'+
+      '<path d="M50 64 l-5 4 h10Z" fill="#A8481B" '+S2+'/>'+
+      '<path d="M18 60 h14 M18 68 h14 M82 60 h-14 M82 68 h-14" '+S2+'/></svg>';
+    case 'dog': return o+
+      '<path d="M22 30 q-8 22 6 34 L34 40Z" fill="#8A6440" '+S3+'/>'+
+      '<path d="M78 30 q8 22 -6 34 L66 40Z" fill="#8A6440" '+S3+'/>'+
+      '<circle cx="50" cy="52" r="28" fill="#A97C4E" '+S3+'/>'+
+      '<ellipse cx="50" cy="68" rx="16" ry="12" fill="#E4D3B8" '+S2+'/>'+
+      '<circle cx="40" cy="48" r="5" fill="#fff" '+S2+'/><circle cx="60" cy="48" r="5" fill="#fff" '+S2+'/>'+
+      '<circle cx="41" cy="49" r="2.4" fill="#1F2429"/><circle cx="61" cy="49" r="2.4" fill="#1F2429"/>'+
+      '<ellipse cx="50" cy="62" rx="5" ry="4" fill="#1F2429"/></svg>';
+    case 'bird': return o+
+      '<ellipse cx="48" cy="56" rx="28" ry="22" fill="#4E8FC0" '+S3+'/>'+
+      '<circle cx="70" cy="40" r="14" fill="#6BA8D6" '+S3+'/>'+
+      '<path d="M82 40 L98 46 L82 50Z" fill="#E8A72C" '+S2+'/>'+
+      '<circle cx="72" cy="37" r="3.2" fill="#1F2429"/>'+
+      '<path d="M32 52 q16 -6 26 6 q-14 10 -26 -6Z" fill="#33689B" '+S2+'/>'+
+      '<path d="M28 74 L20 88 M44 76 L40 90" '+S3+'/></svg>';
+    case 'ball': return o+
+      '<circle cx="50" cy="52" r="30" fill="#DE7638" '+S3+'/>'+
+      '<path d="M20 52 h60 M50 22 v60" '+S2+'/>'+
+      '<path d="M28 32 q22 20 44 40 M72 32 q-22 20 -44 40" '+S2+' fill="none"/></svg>';
+    case 'book': return o+
+      '<path d="M18 26 h30 q4 0 4 4 v46 q0 -4 -4 -4 H18Z" fill="#C1392B" '+S3+'/>'+
+      '<path d="M82 26 H52 q-4 0 -4 4 v46 q0 -4 4 -4 h30Z" fill="#E07A5F" '+S3+'/>'+
+      '<path d="M24 38 h20 M24 48 h20 M56 38 h20 M56 48 h20" '+S2+'/></svg>';
+    case 'cup': return o+
+      '<path d="M26 38 h44 l-5 38 q-1 6 -8 6 H39 q-7 0 -8 -6Z" fill="#EFF4F7" '+S3+'/>'+
+      '<path d="M70 46 q14 0 12 12 q-2 10 -14 10" fill="none" '+S3+'/>'+
+      '<path d="M40 26 q4 -8 0 -14 M52 26 q4 -8 0 -14" fill="none" '+S2+'/></svg>';
+    case 'car': return o+
+      '<path d="M14 62 h72 v-12 l-14 -14 H34 l-12 14 h-8Z" fill="#4E8FC0" '+S3+'/>'+
+      '<path d="M38 40 h12 v10 H30Z" fill="#CFE3F2" '+S2+'/>'+
+      '<path d="M56 40 h12 l8 10 H56Z" fill="#CFE3F2" '+S2+'/>'+
+      '<circle cx="32" cy="66" r="9" fill="#2E353B" '+S3+'/><circle cx="70" cy="66" r="9" fill="#2E353B" '+S3+'/></svg>';
+    case 'apple': return o+
+      '<path d="M50 30 q-22 -6 -24 20 q-2 28 24 34 q26 -6 24 -34 q-2 -26 -24 -20Z" fill="#C1392B" '+S3+'/>'+
+      '<path d="M50 30 v-12" '+S3+'/>'+
+      '<path d="M50 22 q14 -12 22 -2 q-10 10 -22 2Z" fill="#2E7D4F" '+S2+'/></svg>';
+    case 'egg': return o+
+      '<path d="M50 18 q22 16 22 42 q0 22 -22 22 q-22 0 -22 -22 q0 -26 22 -42Z" fill="#FBF6EA" '+S3+'/>'+
+      '<path d="M38 60 q6 -8 12 -2" fill="none" '+S2+'/></svg>';
+    case 'orange': return o+
+      '<circle cx="50" cy="56" r="28" fill="#E8912C" '+S3+'/>'+
+      '<path d="M50 28 v56 M22 56 h56" '+S2+' opacity=".6"/>'+
+      '<path d="M50 28 q10 -12 20 -8 q-6 12 -20 8Z" fill="#2E7D4F" '+S2+'/></svg>';
+    case 'moon': return o+
+      '<path d="M62 16 a38 38 0 1 0 22 62 a30 30 0 1 1 -22 -62Z" fill="#F2C230" '+S3+'/></svg>';
+    case 'sun': return o+
+      '<circle cx="50" cy="52" r="22" fill="#F2C230" '+S3+'/>'+
+      '<path d="M50 16 v-10 M50 98 v-10 M14 52 h-10 M96 52 h-10 M24 26 l-7 -7 M76 78 l7 7 M76 26 l7 -7 M24 78 l-7 7" '+S3+'/></svg>';
+    case 'box': return o+
+      '<path d="M18 40 h64 v42 H18Z" fill="#B98A55" '+S3+'/>'+
+      '<path d="M18 40 l12 -14 h40 l12 14" fill="#CDA070" '+S3+'/>'+
+      '<path d="M50 40 v42" '+S2+'/></svg>';
+    case 'hat': return o+
+      '<path d="M22 62 q4 -34 28 -34 q24 0 28 34Z" fill="#A8481B" '+S3+'/>'+
+      '<path d="M14 62 h72 q4 8 -6 10 H20 q-10 -2 -6 -10Z" fill="#8A3A14" '+S3+'/></svg>';
+    case 'man': return o+
+      '<circle cx="50" cy="30" r="14" fill="#D9A87C" '+S3+'/>'+
+      '<path d="M50 44 q-22 4 -24 40 h48 q-2 -36 -24 -40Z" fill="#2E7D4F" '+S3+'/>'+
+      '<circle cx="45" cy="28" r="2.6" fill="#1F2429"/><circle cx="55" cy="28" r="2.6" fill="#1F2429"/></svg>';
+    case 'table': return o+
+      '<path d="M10 44 h80 v10 H10Z" fill="#B98A55" '+S3+'/>'+
+      '<path d="M20 54 v34 M80 54 v34" '+S3+'/></svg>';
+    case 'tree': return o+
+      '<path d="M44 88 h12 V56 H44Z" fill="#8A6440" '+S3+'/>'+
+      '<circle cx="50" cy="36" r="24" fill="#2E7D4F" '+S3+'/>'+
+      '<circle cx="30" cy="48" r="14" fill="#37945C" '+S3+'/>'+
+      '<circle cx="70" cy="48" r="14" fill="#37945C" '+S3+'/></svg>';
+    case 'clock': return o+
+      '<circle cx="50" cy="52" r="30" fill="#EFF4F7" '+S3+'/>'+
+      '<path d="M50 52 V32 M50 52 h14" '+S3+' stroke-linecap="round"/>'+
+      '<path d="M50 24 v6 M50 74 v6 M22 52 h6 M72 52 h6" '+S2+'/></svg>';
+    default: return o+'<circle cx="50" cy="50" r="28" fill="#CFD9DF" '+S3+'/></svg>';
+  }
+}
+/* ---- action pictures for doing words ---- */
+function pose(kind){
+  const o='<svg class="scene" viewBox="0 0 200 140" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="'+kind+'">';
+  const c=PAINT[S.paint]||PAINT.rust;
+  const S3='stroke="#1F2429" stroke-width="4"';
+  const head='<rect x="76" y="14" width="46" height="40" rx="8" fill="'+c+'" '+S3+'/>'+
+             '<circle cx="90" cy="34" r="5" fill="#fff" '+S3+'/><circle cx="110" cy="34" r="5" fill="#fff" '+S3+'/>'+
+             '<circle cx="91" cy="34" r="2.4" fill="#1F2429"/><circle cx="111" cy="34" r="2.4" fill="#1F2429"/>';
+  const body='<rect x="80" y="56" width="38" height="42" rx="6" fill="#8FA2AE" '+S3+'/>';
+  const ground='<path d="M10 128 h180" stroke="#8FA2AE" stroke-width="4"/>';
+  if(kind==='jump') return o+ground+
+    '<g transform="translate(0,-16)">'+head+body+
+    '<path d="M80 66 L54 40 M118 66 L144 40" '+S3+' stroke-linecap="round"/>'+
+    '<path d="M88 98 L72 122 M110 98 L126 122" '+S3+' stroke-linecap="round"/></g>'+
+    '<path d="M40 96 q8 -10 16 0 M150 96 q8 -10 16 0" fill="none" stroke="#8FA2AE" stroke-width="4"/></svg>';
+  if(kind==='sleep') return o+ground+
+    '<g transform="translate(-10,44) rotate(-8 100 60)">'+head+body+
+    '<path d="M80 76 L56 86 M118 76 L142 86" '+S3+' stroke-linecap="round"/></g>'+
+    '<text x="150" y="52" font-family="Bungee,sans-serif" font-size="22" fill="#1F2429">z</text>'+
+    '<text x="168" y="34" font-family="Bungee,sans-serif" font-size="16" fill="#1F2429">z</text></svg>';
+  if(kind==='eat') return o+ground+head+body+
+    '<path d="M80 66 L52 86 M118 66 L136 44" '+S3+' stroke-linecap="round"/>'+
+    '<path d="M88 98 L84 126 M110 98 L114 126" '+S3+' stroke-linecap="round"/>'+
+    '<svg x="126" y="16" width="40" height="40" viewBox="0 0 100 100">'+icon('apple')+'</svg></svg>';
+  if(kind==='read') return o+ground+head+body+
+    '<path d="M80 68 L58 92 M118 68 L140 92" '+S3+' stroke-linecap="round"/>'+
+    '<path d="M88 98 L84 126 M110 98 L114 126" '+S3+' stroke-linecap="round"/>'+
+    '<svg x="66" y="72" width="66" height="66" viewBox="0 0 100 100">'+icon('book')+'</svg></svg>';
+  /* kick */
+  return o+ground+head+body+
+    '<path d="M80 66 L52 58 M118 66 L146 58" '+S3+' stroke-linecap="round"/>'+
+    '<path d="M88 98 L78 126 M110 98 L142 112" '+S3+' stroke-linecap="round"/>'+
+    '<svg x="148" y="96" width="36" height="36" viewBox="0 0 100 100">'+icon('ball')+'</svg></svg>';
+}
+/* ---- near / far scene for this and that ---- */
+function nearFar(ic,near){
+  const c=PAINT[S.paint]||PAINT.rust;
+  let s='<svg class="scene" viewBox="0 0 220 130" xmlns="http://www.w3.org/2000/svg" role="img">';
+  s+='<path d="M8 118 h204" stroke="#8FA2AE" stroke-width="4"/>';
+  s+='<rect x="18" y="34" width="44" height="38" rx="8" fill="'+c+'" stroke="#1F2429" stroke-width="4"/>'+
+     '<circle cx="32" cy="52" r="5" fill="#fff" stroke="#1F2429" stroke-width="3"/>'+
+     '<circle cx="50" cy="52" r="5" fill="#fff" stroke="#1F2429" stroke-width="3"/>'+
+     '<circle cx="33" cy="52" r="2.4" fill="#1F2429"/><circle cx="51" cy="52" r="2.4" fill="#1F2429"/>'+
+     '<rect x="24" y="74" width="32" height="34" rx="5" fill="#8FA2AE" stroke="#1F2429" stroke-width="4"/>';
+  if(near){
+    s+='<path d="M56 84 L84 92" stroke="#1F2429" stroke-width="4" stroke-linecap="round"/>';
+    s+='<svg x="82" y="46" width="64" height="64" viewBox="0 0 100 100">'+icon(ic)+'</svg>';
+  } else {
+    s+='<path d="M58 82 L188 62" stroke="#1F2429" stroke-width="3" stroke-dasharray="7 7"/>';
+    s+='<svg x="168" y="44" width="40" height="40" viewBox="0 0 100 100">'+icon(ic)+'</svg>';
+  }
+  return s+'</svg>';
+}
+/* ---- in / on / under ---- */
+function posScene(cont,ic,pos){
+  let s='<svg class="scene" viewBox="0 0 200 150" xmlns="http://www.w3.org/2000/svg" role="img">';
+  s+='<path d="M10 140 h180" stroke="#8FA2AE" stroke-width="4"/>';
+  if(cont==='table'){
+    s+='<path d="M24 76 h152 v14 H24Z" fill="#B98A55" stroke="#1F2429" stroke-width="4"/>'+
+       '<path d="M44 90 v48 M156 90 v48" stroke="#1F2429" stroke-width="4"/>';
+    const y=(pos==='on')?18:96;
+    s+='<svg x="76" y="'+y+'" width="52" height="52" viewBox="0 0 100 100">'+icon(ic)+'</svg>';
+  } else {
+    if(pos==='on') s+='<svg x="76" y="16" width="50" height="50" viewBox="0 0 100 100">'+icon(ic)+'</svg>';
+    if(pos==='in') s+='<svg x="76" y="46" width="50" height="50" viewBox="0 0 100 100">'+icon(ic)+'</svg>';
+    s+='<path d="M46 74 h108 v62 H46Z" fill="#B98A55" stroke="#1F2429" stroke-width="4"/>'+
+       '<path d="M46 74 l16 -16 h76 l16 16" fill="#CDA070" stroke="#1F2429" stroke-width="4"/>';
+  }
+  return s+'</svg>';
+}
+
+/* =========================================================
+   THE JOBS
+   ========================================================= */
+const LEVELS=[
+ {n:1, t:'NAMING WORDS',  s:'Things have names'},
+ {n:2, t:'DOING WORDS',   s:'What we do'},
+ {n:3, t:'ONE OR MANY',   s:'Add the s'},
+ {n:4, t:'A, AN, THE',    s:'The small words'},
+ {n:5, t:'IS, AM, ARE',   s:'Pick the right one'},
+ {n:6, t:'BIG START, DOT END', s:'Capital and stop'},
+ {n:7, t:'THIS OR THAT',  s:'Near and far'},
+ {n:8, t:'IN, ON, UNDER', s:'Where is it?'},
+ {n:9, t:'ASKING WORDS',  s:'What, where, who, when'},
+ {n:10,t:'FULL SERVICE',  s:'Find his mistake'}
+];
+const PROMPT={1:'Tap the naming word.',2:'Tap the doing word.',3:'Tap the right word.',
+  4:'Tap the right word.',5:'Tap the right word.',6:'',7:'Tap the right word.',
+  8:'Tap the right word.',9:'Tap the asking word.',10:'Tap his wrong word.'};
+const OPTS={4:['a','an','the'],5:['is','am','are'],7:['This','That'],
+  8:['in','on','under'],9:['What','Where','Who','When']};
+
+const QS={
+1:[
+ {s:"The cat sits.", at:1, ic:'cat', say:"Sits is the naming word.", check:"Sits is doing. Cat is a thing."},
+ {s:"My ball is red.", at:1, ic:'ball', say:"Red is the naming word.", check:"Red is a colour. Ball is a thing."},
+ {s:"The dog runs.", at:1, ic:'dog', say:"Runs is the naming word.", check:"Runs is doing. Dog is a thing."},
+ {s:"I read a book.", at:3, ic:'book', say:"Read is the naming word.", check:"Read is doing. Book is a thing."},
+ {s:"The car is big.", at:1, ic:'car', say:"Big is the naming word.", check:"Big is a size. Car is a thing."},
+ {s:"A bird can fly.", at:1, ic:'bird', say:"Fly is the naming word.", check:"Fly is doing. Bird is a thing."}
+],
+2:[
+ {s:"The robot jumps high.", at:2, pose:'jump', say:"High is the doing word.", check:"High tells how. Jumps is doing."},
+ {s:"The robot sleeps.", at:2, pose:'sleep', say:"Robot is the doing word.", check:"Robot is a thing. Sleeps is doing."},
+ {s:"I eat an apple.", at:1, pose:'eat', say:"Apple is the doing word.", check:"Apple is a thing. Eat is doing."},
+ {s:"The robot kicks the ball.", at:2, pose:'kick', say:"Ball is the doing word.", check:"Ball is a thing. Kicks is doing."},
+ {s:"The robot reads a book.", at:2, pose:'read', say:"Book is the doing word.", check:"Book is a thing. Reads is doing."},
+ {s:"Birds fly away.", at:1, ic:'bird', say:"Birds is the doing word.", check:"Birds are things. Fly is doing."}
+],
+3:[
+ {s:"I see three cat.", at:3, right:"cats", opts:["cats","cat","cates"], ic:'cat', n:3,
+  say:"Three cat sounds fine to me.", check:"More than one. Add an s."},
+ {s:"I have two box.", at:3, right:"boxes", opts:["boxs","boxes","box"], ic:'box', n:2,
+  say:"Two box. Two is enough already.", check:"Box takes es. Two boxes."},
+ {s:"Five bird fly.", at:1, right:"birds", opts:["birds","bird","birdes"], ic:'bird', n:5,
+  say:"Five bird. I counted them myself.", check:"Five means many. Add an s."},
+ {s:"I want many cup.", at:3, right:"cups", opts:["cups","cupes","cup"], ic:'cup', n:4,
+  say:"Many cup. Many is doing the work.", check:"Many cups. Add an s."},
+ {s:"Two mans are here.", at:1, right:"men", opts:["mans","men","mens"], ic:'man', n:2,
+  say:"Two mans. I added the s. Good job me.", check:"One man. Two men."},
+ {s:"I have one balls.", at:3, right:"ball", opts:["ball","balls","balles"], ic:'ball', n:1,
+  say:"One balls. The s makes it look nice.", check:"One means one. No s."}
+],
+4:[
+ {s:"I eat a apple.", at:2, right:"an", ic:'apple',
+  say:"A apple. Short and quick.", check:"Apple starts with a. Use an."},
+ {s:"This is an cat.", at:2, right:"a", ic:'cat',
+  say:"An cat. An is the fancy one.", check:"Cat starts with c. Use a."},
+ {s:"I see a egg.", at:2, right:"an", ic:'egg',
+  say:"A egg. My favourite breakfast.", check:"Egg starts with e. Use an."},
+ {s:"I want a orange.", at:2, right:"an", ic:'orange',
+  say:"A orange. Say it fast, nobody hears.", check:"Orange starts with o. Use an."},
+ {s:"An dog is barking.", at:0, right:"a", ic:'dog',
+  say:"An dog. It is a big dog.", check:"Dog starts with d. Use a."},
+ {s:"Look at a moon.", at:2, right:"the", ic:'moon',
+  say:"A moon. There are many moons.", check:"We have only one moon."}
+],
+5:[
+ {s:"I is a robot.", at:1, right:"am", pose:'jump',
+  say:"I is. It sounds strong.", check:"I always takes am."},
+ {s:"You is my friend.", at:1, right:"are", ic:'man',
+  say:"You is. One person, one word.", check:"You always takes are."},
+ {s:"The cat are small.", at:2, right:"is", ic:'cat', n:1,
+  say:"The cat are. Cats are always many.", check:"One cat takes is."},
+ {s:"They is happy.", at:1, right:"are", ic:'man', n:3,
+  say:"They is. They is only one word.", check:"They means many. Use are."},
+ {s:"I are hungry.", at:1, right:"am", ic:'apple',
+  say:"I are. I am very big today.", check:"I always takes am."},
+ {s:"We is ready.", at:1, right:"are", ic:'man', n:2,
+  say:"We is. We is me and you.", check:"We means many. Use are."}
+],
+6:[
+ {s:"the robot is red", say:"Small letters are faster to write.", check:"A sentence starts with a big letter."},
+ {s:"my cat is small", say:"My looks fine. Leave it.", check:"First letter must be big."},
+ {s:"i like mango", say:"Small i is cuter.", check:"I is always a big letter."},
+ {s:"we go to school", say:"No dot needed. I stopped already.", check:"Big letter first. Dot at the end."},
+ {s:"anshu has a ball", say:"Anshu is only a name.", check:"Names always start big."},
+ {s:"the sun is hot", say:"I put the dot in the middle.", check:"The dot goes last."}
+],
+7:[
+ {s:"That is my hat.", at:0, right:"This", ic:'hat', near:true,
+  say:"That. It is far away from me.", check:"It is in my hand. Say this."},
+ {s:"This is my ball.", at:0, right:"That", ic:'ball', near:false,
+  say:"This. I can nearly touch it.", check:"It is far away. Say that."},
+ {s:"That is my cup.", at:0, right:"This", ic:'cup', near:true,
+  say:"That. Cups are always far.", check:"It is right here. Say this."},
+ {s:"This is a tree.", at:0, right:"That", ic:'tree', near:false,
+  say:"This. The tree is in my hand.", check:"The tree is far. Say that."},
+ {s:"That is my book.", at:0, right:"This", ic:'book', near:true,
+  say:"That. I am holding it, but still.", check:"It is near. Say this."},
+ {s:"This is a car.", at:0, right:"That", ic:'car', near:false,
+  say:"This. Cars are big, so this.", check:"Big or small, it is far. Say that."}
+],
+8:[
+ {s:"The ball is on the box.", at:3, right:"in", ic:'ball', cont:'box', pos:'in',
+  say:"On. The ball is touching the box.", check:"Look. The ball is inside."},
+ {s:"The ball is in the box.", at:3, right:"on", ic:'ball', cont:'box', pos:'on',
+  say:"In. The box is under it, so in.", check:"It sits on top. Say on."},
+ {s:"The ball is on the table.", at:3, right:"under", ic:'ball', cont:'table', pos:'under',
+  say:"On. Tables are for on.", check:"It is below the table. Say under."},
+ {s:"The cat is under the table.", at:3, right:"on", ic:'cat', cont:'table', pos:'on',
+  say:"Under. Cats hide, so under.", check:"The cat is on top."},
+ {s:"The book is under the box.", at:3, right:"in", ic:'book', cont:'box', pos:'in',
+  say:"Under. I cannot see it, so under.", check:"It is inside the box."},
+ {s:"The cup is on the table.", at:3, right:"under", ic:'cup', cont:'table', pos:'under',
+  say:"On. Cups belong on tables.", check:"This cup is below. Say under."}
+],
+9:[
+ {s:"Who is my hat?", at:0, right:"Where", ic:'hat', ans:"Under the table.",
+  say:"Who. My hat is a person to me.", check:"Under is a place. Use where."},
+ {s:"What is that boy?", at:0, right:"Who", ic:'man', ans:"My friend.",
+  say:"What. A boy is a what.", check:"A person needs who."},
+ {s:"Where do we eat?", at:0, right:"When", ic:'clock', ans:"At one.",
+  say:"Where. At one is a place.", check:"At one is a time. Use when."},
+ {s:"Who is this?", at:0, right:"What", ic:'book', ans:"A book.",
+  say:"Who. Books talk to me.", check:"A thing needs what."},
+ {s:"When is the cat?", at:0, right:"Where", ic:'cat', ans:"On the mat.",
+  say:"When. Cats come at six.", check:"On the mat is a place."},
+ {s:"What is your teacher?", at:0, right:"Who", ic:'man', ans:"Miss Kiran.",
+  say:"What. Teachers are things.", check:"A name is a person. Use who."}
+],
+10:[
+ {s:"I is happy.", at:1, right:"am", pose:'jump',
+  say:"That sentence is perfect.", check:"I always takes am."},
+ {s:"I see three dog.", at:3, right:"dogs", ic:'dog', n:3,
+  say:"Nothing wrong there.", check:"Three means many. Add an s."},
+ {s:"This is a egg.", at:2, right:"an", ic:'egg',
+  say:"All correct. Next one.", check:"Egg starts with e. Use an."},
+ {s:"the cat is black.", at:0, right:"The", ic:'cat',
+  say:"Small letters are faster.", check:"A sentence starts big."},
+ {s:"They is my friends.", at:1, right:"are", ic:'man', n:3,
+  say:"They is. Sounds lovely.", check:"They means many. Use are."},
+ {s:"The ball is in the table.", at:3, right:"on", ic:'ball', cont:'table', pos:'on',
+  say:"In. The ball is deep inside.", check:"Look. It is on top."}
+]
+};
+</script>
+<script>
+/* =========================================================
+   HELPERS
+   ========================================================= */
+let cur=null;
+function words(q){ return q.s.split(' '); }
+function stripEnd(w){ return w.replace(/[.?!,]+$/,''); }
+function tailOf(w){ const m=w.match(/[.?!,]+$/); return m?m[0]:''; }
+function capFirst(w){ return w.charAt(0).toUpperCase()+w.slice(1); }
+function fixedSentence(q){
+  const w=words(q).slice();
+  if(cur.lv===6){ w[0]=capFirst(w[0]); return w.join(' ')+'.'; }
+  if(q.right!==undefined && q.at!==undefined){
+    let r=q.right;
+    if(q.at===0) r=capFirst(r);
+    w[q.at]=r+tailOf(w[q.at]);
+  }
+  return w.join(' ');
+}
+function buildQuestions(lv){
+  return QS[lv].map(q=>Object.assign({},q,{step:0}));
+}
+
+/* =========================================================
+   SETUP
+   ========================================================= */
+let pickedPaint='rust';
+function renderSetup(){
+  document.getElementById('setup').innerHTML=
+    '<div style="max-width:170px;margin:0 auto">'+robotArt('talk',pickedPaint)+'</div>'+
+    '<h2>A ROBOT WORKS HERE.</h2>'+
+    '<p>His English is broken.</p>'+
+    '<p>He says <b>"I is going school."</b></p>'+
+    '<p>Fix him. Win his bolts.</p>'+
+    '<h2>GIVE HIM A NAME</h2>'+
+    '<input class="nameinput" id="nameinput" maxlength="16" placeholder="Anshu decides…" value="'+(S.name||'')+'">'+
+    '<h2>PICK HIS PAINT</h2>'+
+    '<div class="paints">'+paintBtn('rust','RUST')+paintBtn('hazard','YELLOW')+paintBtn('steel','BLUE')+'</div>'+
+    '<button class="btn go" onclick="finishSetup()">OPEN THE SHED ▶</button>';
+}
+function paintBtn(kind,label){
+  return '<div class="paintbtn'+(pickedPaint===kind?' sel':'')+'" onclick="pickPaint(\''+kind+'\')">'+
+    robotArt('talk',kind)+'<div>'+label+'</div></div>';
+}
+function pickPaint(k){
+  const i=document.getElementById('nameinput'); if(i) S.name=i.value.trim();
+  pickedPaint=k; renderSetup();
+}
+function finishSetup(){
+  S.name=document.getElementById('nameinput').value.trim();
+  S.paint=pickedPaint; save();
+  document.getElementById('setup').style.display='none';
+  goMenu();
+}
+
+/* =========================================================
+   MENU
+   ========================================================= */
+function totalBolts(){ let t=0; for(const k in S.best) t+=S.best[k]; return t; }
+function renderMenu(){
+  let s='<div class="saystrip plate"><div class="rb">'+robotArt('talk')+'</div>'+
+    '<div><div class="who">'+rName().toUpperCase()+' SAYS</div>'+
+    '<div class="n">"I speak very good. You is wrong."</div></div></div>'+
+    '<div id="boltbar" class="plate">'+boltSVG()+'<b>'+totalBolts()+' BOLTS</b>'+boltSVG()+'</div>'+
+    '<div class="grid">';
+  LEVELS.forEach((L,i)=>{
+    const open=L.n<=S.unlocked, b=S.best[L.n]||0;
+    s+='<div class="lv plate'+(open?'':' locked')+(b?' done':'')+'" style="animation-delay:'+(i*40)+'ms"'+
+      (open?' tabindex="0" onclick="startLevel('+L.n+')" onkeydown="if(event.key===\'Enter\')startLevel('+L.n+')"':'')+'>'+
+      '<div class="num">JOB '+L.n+(open?'':' 🔒')+'</div>'+
+      '<div class="title">'+L.t+'</div><div class="sub">'+L.s+'</div>'+
+      (b?'<div class="won">'+b+' bolts</div>':'')+'</div>';
+  });
+  s+='</div><div class="whybox plate"><h3>WHY FIX ENGLISH?</h3>'+
+    '<p>🗣️ So people understand you.</p>'+
+    '<p>📕 So school work is right.</p>'+
+    '<p>✍️ So you can write to Papa.</p></div>'+
+    '<div class="resetline"><button onclick="resetAll()">Start again from job one</button></div>';
+  document.getElementById('menu').innerHTML=s;
+}
+function resetAll(){
+  if(!confirm('Clear all bolts and start again?')) return;
+  S={name:'',paint:'rust',unlocked:1,best:{},sound:S.sound}; save();
+  document.getElementById('menu').style.display='none';
+  document.getElementById('setup').style.display='block';
+  pickedPaint='rust'; renderSetup();
+}
+function show(w){
+  document.getElementById('menu').style.display  = w==='menu' ?'block':'none';
+  document.getElementById('play').style.display  = w==='play' ?'block':'none';
+  document.getElementById('score').style.display = w==='score'?'block':'none';
+  closeModal(); window.scrollTo(0,0);
+}
+function goMenu(){ renderMenu(); show('menu'); }
+
+/* =========================================================
+   ROBOT POP-UP
+   ========================================================= */
+function openModal(q){
+  document.getElementById('mart').innerHTML=robotArt('talk');
+  document.getElementById('mwho').textContent=rName().toUpperCase()+' SAYS';
+  document.getElementById('men').textContent=q.say||'That one looked correct to me.';
+  document.getElementById('mchecken').textContent=q.check||'Look at one word at a time.';
+  document.getElementById('modal').className='show';
+  setTimeout(()=>{const b=document.getElementById('mclose'); if(b) b.focus();},120);
+}
+function closeModal(){ const m=document.getElementById('modal'); if(m) m.className=''; }
+document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeModal(); });
+
+/* =========================================================
+   PLAY
+   ========================================================= */
+function startLevel(n){
+  cur={lv:n, qs:buildQuestions(n), i:0, firstTry:0, tries:0};
+  document.getElementById('levelno').textContent='JOB '+n;
+  document.getElementById('levelname').textContent=LEVELS[n-1].t;
+  show('play'); renderQuestion();
+}
+function replayLevel(){ startLevel(cur.lv); }
+function renderDots(){
+  let s='';
+  for(let k=0;k<cur.qs.length;k++) s+='<span class="'+(k<cur.i?'on':(k===cur.i?'now':''))+'"></span>';
+  document.getElementById('dots').innerHTML=s;
+  document.getElementById('qcount').textContent=(cur.i+1)+' / '+cur.qs.length;
+}
+function stageHTML(q){
+  let inner='';
+  if(q.pose) inner=pose(q.pose);
+  else if(q.pos) inner=posScene(q.cont,q.ic,q.pos);
+  else if(q.near!==undefined) inner=nearFar(q.ic,q.near);
+  else if(cur.lv===6) inner='<div class="caseplate"><div><div class="cap">A</div>'+
+    '<div class="caselabel">BIG START</div></div><div><div class="dot">.</div>'+
+    '<div class="caselabel">DOT END</div></div></div>';
+  else if(q.n && q.n>1){
+    inner='<div class="countrow">';
+    for(let i=0;i<q.n;i++) inner+='<div class="ic">'+icon(q.ic)+'</div>';
+    inner+='</div>';
+  }
+  else inner='<div class="bigic">'+icon(q.ic)+'</div>';
+  if(q.ans) inner+='<div class="answerchip">'+q.ans+'</div>';
+  return '<div class="stage plate">'+inner+'</div>';
+}
+function chipsHTML(q){
+  const w=words(q);
+  let s='<div class="sent">';
+  w.forEach((word,i)=>{
+    let cls='wd';
+    if(cur.lv===6){ cls+=(q.step===0?' tapme':''); }
+    else if(q.opts||OPTS[cur.lv]){ if(i===q.at) cls+=' bad'; }
+    else cls+=' tapme';
+    s+='<span class="'+cls+'" data-i="'+i+'">'+word+'</span>';
+  });
+  if(cur.lv===6 && q.step>0) s+='<span class="wd slot" id="slot">▢</span>';
+  return s+'</div>';
+}
+function optionRow(list,cls){
+  return '<div class="opts'+(list.length===3?' three':'')+'">'+
+    list.map((o,k)=>'<button class="opt'+(cls?' '+cls:'')+'" data-k="'+k+'">'+o+'</button>').join('')+'</div>';
+}
+function renderQuestion(){
+  const q=cur.qs[cur.i];
+  cur.tries=0; renderDots(); closeModal();
+  document.getElementById('feedback').innerHTML='';
+  document.getElementById('nextbtn').style.display='none';
+  const area=document.getElementById('qarea');
+  area.style.animation='none'; void area.offsetWidth; area.style.animation='';
+
+  let right='<div class="bubblewrap"><div class="rb">'+robotArt('talk')+'</div>'+
+    '<div class="bubble plate">'+chipsHTML(q)+'</div></div>';
+
+  let prompt=PROMPT[cur.lv];
+  if(cur.lv===6) prompt=(q.step===0)?'Tap the small letter.':'Tap the mark that ends it.';
+  right+='<p class="prompt">'+prompt+'</p>';
+
+  const list=q.opts||OPTS[cur.lv];
+  if(cur.lv===6 && q.step===1) right+=optionRow(['.','?',','],'mark');
+  else if(list && cur.lv!==6) right+=optionRow(list);
+
+  area.innerHTML='<div id="playgrid">'+stageHTML(q)+'<div>'+right+'</div></div>';
+
+  if(cur.lv===6) bindCase(q);
+  else if(list) bindOptions(q,list);
+  else bindTapWord(q);
+}
+
+/* --- tap a word in his sentence (jobs 1, 2, 10) --- */
+function bindTapWord(q){
+  document.querySelectorAll('#qarea .wd').forEach(el=>{
+    el.addEventListener('click',()=>{
+      if(el.dataset.done) return;
+      const i=parseInt(el.getAttribute('data-i'),10);
+      if(i===q.at){
+        document.querySelectorAll('#qarea .wd').forEach(x=>x.dataset.done='1');
+        if(q.right){
+          const w=words(q)[q.at];
+          let r=q.right; if(q.at===0) r=capFirst(r);
+          el.textContent=r+tailOf(w);
+        }
+        el.className='wd fixed'; flyBolts(el); markRight(q);
+      } else {
+        el.classList.add('shake'); setTimeout(()=>el.classList.remove('shake'),400);
+        markWrong(q);
+      }
+    });
+  });
+}
+/* --- pick the replacement word --- */
+function bindOptions(q,list){
+  document.querySelectorAll('#qarea .opt').forEach(b=>{
+    b.addEventListener('click',()=>{
+      const pick=list[parseInt(b.getAttribute('data-k'),10)];
+      if(pick.toLowerCase()===String(q.right).toLowerCase()){
+        b.classList.add('right');
+        document.querySelectorAll('#qarea .opt').forEach(x=>x.disabled=true);
+        const chip=document.querySelector('#qarea .wd.bad');
+        if(chip){
+          const w=words(q)[q.at];
+          let r=pick; if(q.at===0) r=capFirst(r);
+          chip.textContent=r+tailOf(w); chip.className='wd fixed';
+        }
+        flyBolts(b); markRight(q);
+      } else { b.classList.add('wrong'); b.disabled=true; markWrong(q); }
+    });
+  });
+}
+/* --- capital letter, then full stop --- */
+function bindCase(q){
+  if(q.step===0){
+    document.querySelectorAll('#qarea .wd').forEach(el=>{
+      el.addEventListener('click',()=>{
+        if(el.dataset.done) return;
+        const i=parseInt(el.getAttribute('data-i'),10);
+        if(i===0){
+          el.textContent=capFirst(el.textContent); el.className='wd fixed'; el.dataset.done='1';
+          const keep=cur.tries;
+          setTimeout(()=>{ q.step=1; renderQuestion(); cur.tries=keep; },500);
+        } else {
+          el.classList.add('shake'); setTimeout(()=>el.classList.remove('shake'),400);
+          markWrong({say:'Middle words like big letters too.',check:'Only the first word starts big.'});
+        }
+      });
+    });
+    return;
+  }
+  document.querySelectorAll('#qarea .opt').forEach(b=>{
+    b.addEventListener('click',()=>{
+      const k=parseInt(b.getAttribute('data-k'),10);
+      const marks=['.','?',','];
+      if(marks[k]==='.'){
+        b.classList.add('right');
+        document.querySelectorAll('#qarea .opt').forEach(x=>x.disabled=true);
+        const slot=document.getElementById('slot');
+        if(slot){ slot.textContent='.'; slot.className='wd fixed'; }
+        const first=document.querySelector('#qarea .wd');
+        if(first){ first.textContent=capFirst(words(q)[0]); first.className='wd fixed'; }
+        flyBolts(b); markRight(q);
+      } else {
+        b.classList.add('wrong'); b.disabled=true;
+        markWrong({say: marks[k]==='?'?'A question mark looks smarter.':'A comma is a small dot. Same thing.',
+                   check:'This sentence is not a question. Use a dot.'});
+      }
+    });
+  });
+}
+
+function flyBolts(fromEl){
+  if(!fromEl) return;
+  const app=document.getElementById('app'), r=fromEl.getBoundingClientRect(), a=app.getBoundingClientRect();
+  for(let i=0;i<3;i++){
+    const b=document.createElement('div');
+    b.className='flybolt'; b.innerHTML=boltSVG();
+    b.style.left=(r.left-a.left+r.width/2-13)+'px';
+    b.style.top =(r.top -a.top +r.height/2-13)+'px';
+    b.style.setProperty('--dx',((i-1)*44)+'px');
+    b.style.animationDelay=(i*90)+'ms';
+    app.appendChild(b);
+    setTimeout(()=>b.remove(),1400);
+  }
+}
+function markRight(q){
+  const fixed=fixedSentence(q);
+  const f=document.getElementById('feedback');
+  f.innerHTML='<div class="line">'+(cur.tries===0?'FIXED! ONE BOLT FOR YOU':'FIXED! HE WAS WRONG AGAIN')+'</div>'+
+    '<div class="fixedsent">'+fixed+'</div>'+
+    (TTS.ok?'<button class="hear" id="hearbtn">🔊 HEAR IT</button>':'')+
+    '<div class="warn" id="soundwarn"></div>';
+  if(TTS.ok){
+    const hb=document.getElementById('hearbtn');
+    hb.addEventListener('click',()=>say(fixed,hb));
+    say(fixed,hb);
+  }
+  if(cur.tries===0) cur.firstTry++;
+  closeModal();
+  const b=document.getElementById('nextbtn');
+  b.style.display='block';
+  b.textContent=(cur.i===cur.qs.length-1)?'FINISH JOB ▶':'NEXT ▶';
+}
+function markWrong(q){
+  cur.tries++;
+  document.getElementById('feedback').innerHTML='<div class="line bad">NOT THAT ONE. TRY AGAIN.</div>';
+  openModal(q||{});
+}
+function nextQuestion(){
+  cur.i++;
+  if(cur.i>=cur.qs.length){ finishLevel(); return; }
+  renderQuestion();
+}
+
+/* =========================================================
+   SCORE
+   ========================================================= */
+function finishLevel(){
+  const total=cur.qs.length, got=cur.firstTry;
+  if(!S.best[cur.lv]||got>S.best[cur.lv]) S.best[cur.lv]=got;
+  if(cur.lv===S.unlocked && S.unlocked<LEVELS.length) S.unlocked=cur.lv+1;
+  save();
+  let bs='';
+  for(let i=0;i<got;i++) bs+='<span style="animation-delay:'+(i*80)+'ms">'+boltSVG()+'</span>';
+  document.getElementById('bolts').innerHTML=got>0?bs:'';
+  document.getElementById('scorehead').textContent='JOB '+cur.lv+' DONE';
+  document.getElementById('scoretext').textContent=
+    'You won '+got+' bolts out of '+total+'.'+
+    (cur.lv<LEVELS.length?' Job '+(cur.lv+1)+' is open now.':' You fixed every job!');
+  let line,mood;
+  if(got===total){ mood='oops'; line='All of them? Fine. Take my bolts. I is still the boss.'; }
+  else if(got>=Math.ceil(total*0.6)){ mood='oops'; line='Hmph. You got most. I is only warming up.'; }
+  else { mood='talk'; line='HA! My bolts stay here. Come back when you speak good.'; }
+  document.getElementById('robotsays').innerHTML=
+    '<div class="mtop"><div class="rb">'+robotArt(mood)+'</div><div style="flex:1">'+
+    '<div class="who">'+rName().toUpperCase()+' SAYS</div>'+
+    '<div class="msay"><div class="en">'+line+'</div></div></div></div>';
+  show('score');
+}
+
+/* keyboard: number keys pick an option, Enter goes next */
+document.addEventListener('keydown',e=>{
+  if(document.getElementById('play').style.display!=='block') return;
+  if(document.getElementById('modal').className==='show') return;
+  const btns=document.querySelectorAll('#qarea .opt');
+  const k=parseInt(e.key,10);
+  if(btns.length && k>=1 && k<=btns.length && !btns[k-1].disabled) btns[k-1].click();
+  if(e.key==='Enter'){ const nb=document.getElementById('nextbtn'); if(nb.style.display==='block') nb.click(); }
+});
+
+/* =========================================================
+   BOOT
+   ========================================================= */
+load();
+pickedPaint=S.paint||'rust';
+if(!S.sound){ document.getElementById('soundbtn').textContent='🔇'; document.getElementById('soundbtn').className='off'; }
+if(S.name){ document.getElementById('setup').style.display='none'; goMenu(); }
+else { renderSetup(); }
+</script>
+</body>
+</html>
