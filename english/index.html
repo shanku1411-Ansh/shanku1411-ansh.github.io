@@ -296,7 +296,7 @@
 /* =========================================================
    SAVED PROGRESS
    ========================================================= */
-const KEY='robot_shed_v1';
+const KEY='robot_shed_v2';
 let S={name:'', paint:'rust', unlocked:1, best:{}, sound:true};
 function save(){ try{ localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){} }
 function load(){ try{ const r=localStorage.getItem(KEY); if(r) S=Object.assign(S, JSON.parse(r)); }catch(e){} }
@@ -551,20 +551,23 @@ function posScene(cont,ic,pos){
 const LEVELS=[
  {n:1, t:'NAMING WORDS',  s:'Things have names'},
  {n:2, t:'DOING WORDS',   s:'What we do'},
- {n:3, t:'ONE OR MANY',   s:'Add the s'},
- {n:4, t:'A, AN, THE',    s:'The small words'},
- {n:5, t:'IS, AM, ARE',   s:'Pick the right one'},
- {n:6, t:'BIG START, DOT END', s:'Capital and stop'},
- {n:7, t:'THIS OR THAT',  s:'Near and far'},
- {n:8, t:'IN, ON, UNDER', s:'Where is it?'},
- {n:9, t:'ASKING WORDS',  s:'What, where, who, when'},
- {n:10,t:'FULL SERVICE',  s:'Find his mistake'}
+ {n:3, t:'DESCRIBING WORDS', s:'Big, small, red'},
+ {n:4, t:'ONE OR MANY',   s:'Add the s'},
+ {n:5, t:'A, AN, THE',    s:'The small words'},
+ {n:6, t:'IS, AM, ARE',   s:'Pick the right one'},
+ {n:7, t:'BIG START, DOT END', s:'Capital and stop'},
+ {n:8, t:'THIS OR THAT',  s:'Near and far'},
+ {n:9, t:'IN, ON, UNDER', s:'Where is it?'},
+ {n:10,t:'ASKING WORDS',  s:'What, where, who, when'},
+ {n:11,t:'FULL SERVICE',  s:'Find his mistake'}
 ];
-const PROMPT={1:'Tap the naming word.',2:'Tap the doing word.',3:'Tap the right word.',
-  4:'Tap the right word.',5:'Tap the right word.',6:'',7:'Tap the right word.',
-  8:'Tap the right word.',9:'Tap the asking word.',10:'Tap his wrong word.'};
-const OPTS={4:['a','an','the'],5:['is','am','are'],7:['This','That'],
-  8:['in','on','under'],9:['What','Where','Who','When']};
+const PROMPT={1:'Tap the naming word.',2:'Tap the doing word.',3:'Tap the describing word.',
+  4:'Tap the right word.',5:'Tap the right word.',6:'Tap the right word.',7:'',
+  8:'Tap the right word.',9:'Tap the right word.',10:'Tap the asking word.',
+  11:'Tap his wrong word.'};
+const OPTS={5:['a','an','the'],6:['is','am','are'],8:['This','That'],
+  9:['in','on','under'],10:['What','Where','Who','When']};
+const CASE_LV=7;
 
 const QS={
 1:[
@@ -584,6 +587,14 @@ const QS={
  {s:"Birds fly away.", at:1, ic:'bird', say:"Birds is the doing word.", check:"Birds are things. Fly is doing."}
 ],
 3:[
+ {s:"The ball is big.", at:3, ic:'ball', say:"Ball is the describing word.", check:"Ball is a thing. Big tells size."},
+ {s:"My hat is red.", at:3, ic:'hat', say:"Hat is the describing word.", check:"Hat is a thing. Red tells colour."},
+ {s:"A tall tree grows.", at:1, ic:'tree', say:"Tree is the describing word.", check:"Tall tells how big. Tree is a thing."},
+ {s:"The cat is small.", at:3, ic:'cat', say:"Cat is the describing word.", check:"Cat is a thing. Small tells size."},
+ {s:"I see a happy dog.", at:3, ic:'dog', say:"Dog is the describing word.", check:"Happy tells how he feels."},
+ {s:"The sun is hot.", at:3, ic:'sun', say:"Sun is the describing word.", check:"Hot tells how it feels."}
+],
+4:[
  {s:"I see three cat.", at:3, right:"cats", opts:["cats","cat","cates"], ic:'cat', n:3,
   say:"Three cat sounds fine to me.", check:"More than one. Add an s."},
  {s:"I have two box.", at:3, right:"boxes", opts:["boxs","boxes","box"], ic:'box', n:2,
@@ -597,7 +608,7 @@ const QS={
  {s:"I have one balls.", at:3, right:"ball", opts:["ball","balls","balles"], ic:'ball', n:1,
   say:"One balls. The s makes it look nice.", check:"One means one. No s."}
 ],
-4:[
+5:[
  {s:"I eat a apple.", at:2, right:"an", ic:'apple',
   say:"A apple. Short and quick.", check:"Apple starts with a. Use an."},
  {s:"This is an cat.", at:2, right:"a", ic:'cat',
@@ -611,7 +622,7 @@ const QS={
  {s:"Look at a moon.", at:2, right:"the", ic:'moon',
   say:"A moon. There are many moons.", check:"We have only one moon."}
 ],
-5:[
+6:[
  {s:"I is a robot.", at:1, right:"am", pose:'jump',
   say:"I is. It sounds strong.", check:"I always takes am."},
  {s:"You is my friend.", at:1, right:"are", ic:'man',
@@ -625,7 +636,7 @@ const QS={
  {s:"We is ready.", at:1, right:"are", ic:'man', n:2,
   say:"We is. We is me and you.", check:"We means many. Use are."}
 ],
-6:[
+7:[
  {s:"the robot is red", say:"Small letters are faster to write.", check:"A sentence starts with a big letter."},
  {s:"my cat is small", say:"My looks fine. Leave it.", check:"First letter must be big."},
  {s:"i like mango", say:"Small i is cuter.", check:"I is always a big letter."},
@@ -633,7 +644,7 @@ const QS={
  {s:"anshu has a ball", say:"Anshu is only a name.", check:"Names always start big."},
  {s:"the sun is hot", say:"I put the dot in the middle.", check:"The dot goes last."}
 ],
-7:[
+8:[
  {s:"That is my hat.", at:0, right:"This", ic:'hat', near:true,
   say:"That. It is far away from me.", check:"It is in my hand. Say this."},
  {s:"This is my ball.", at:0, right:"That", ic:'ball', near:false,
@@ -647,7 +658,7 @@ const QS={
  {s:"This is a car.", at:0, right:"That", ic:'car', near:false,
   say:"This. Cars are big, so this.", check:"Big or small, it is far. Say that."}
 ],
-8:[
+9:[
  {s:"The ball is on the box.", at:3, right:"in", ic:'ball', cont:'box', pos:'in',
   say:"On. The ball is touching the box.", check:"Look. The ball is inside."},
  {s:"The ball is in the box.", at:3, right:"on", ic:'ball', cont:'box', pos:'on',
@@ -661,7 +672,7 @@ const QS={
  {s:"The cup is on the table.", at:3, right:"under", ic:'cup', cont:'table', pos:'under',
   say:"On. Cups belong on tables.", check:"This cup is below. Say under."}
 ],
-9:[
+10:[
  {s:"Who is my hat?", at:0, right:"Where", ic:'hat', ans:"Under the table.",
   say:"Who. My hat is a person to me.", check:"Under is a place. Use where."},
  {s:"What is that boy?", at:0, right:"Who", ic:'man', ans:"My friend.",
@@ -675,7 +686,7 @@ const QS={
  {s:"What is your teacher?", at:0, right:"Who", ic:'man', ans:"Miss Kiran.",
   say:"What. Teachers are things.", check:"A name is a person. Use who."}
 ],
-10:[
+11:[
  {s:"I is happy.", at:1, right:"am", pose:'jump',
   say:"That sentence is perfect.", check:"I always takes am."},
  {s:"I see three dog.", at:3, right:"dogs", ic:'dog', n:3,
@@ -702,7 +713,7 @@ function tailOf(w){ const m=w.match(/[.?!,]+$/); return m?m[0]:''; }
 function capFirst(w){ return w.charAt(0).toUpperCase()+w.slice(1); }
 function fixedSentence(q){
   const w=words(q).slice();
-  if(cur.lv===6){ w[0]=capFirst(w[0]); return w.join(' ')+'.'; }
+  if(cur.lv===CASE_LV){ w[0]=capFirst(w[0]); return w.join(' ')+'.'; }
   if(q.right!==undefined && q.at!==undefined){
     let r=q.right;
     if(q.at===0) r=capFirst(r);
@@ -821,7 +832,7 @@ function stageHTML(q){
   if(q.pose) inner=pose(q.pose);
   else if(q.pos) inner=posScene(q.cont,q.ic,q.pos);
   else if(q.near!==undefined) inner=nearFar(q.ic,q.near);
-  else if(cur.lv===6) inner='<div class="caseplate"><div><div class="cap">A</div>'+
+  else if(cur.lv===CASE_LV) inner='<div class="caseplate"><div><div class="cap">A</div>'+
     '<div class="caselabel">BIG START</div></div><div><div class="dot">.</div>'+
     '<div class="caselabel">DOT END</div></div></div>';
   else if(q.n && q.n>1){
@@ -838,12 +849,12 @@ function chipsHTML(q){
   let s='<div class="sent">';
   w.forEach((word,i)=>{
     let cls='wd';
-    if(cur.lv===6){ cls+=(q.step===0?' tapme':''); }
+    if(cur.lv===CASE_LV){ cls+=(q.step===0?' tapme':''); }
     else if(q.opts||OPTS[cur.lv]){ if(i===q.at) cls+=' bad'; }
     else cls+=' tapme';
     s+='<span class="'+cls+'" data-i="'+i+'">'+word+'</span>';
   });
-  if(cur.lv===6 && q.step>0) s+='<span class="wd slot" id="slot">▢</span>';
+  if(cur.lv===CASE_LV && q.step>0) s+='<span class="wd slot" id="slot">▢</span>';
   return s+'</div>';
 }
 function optionRow(list,cls){
@@ -862,16 +873,16 @@ function renderQuestion(){
     '<div class="bubble plate">'+chipsHTML(q)+'</div></div>';
 
   let prompt=PROMPT[cur.lv];
-  if(cur.lv===6) prompt=(q.step===0)?'Tap the small letter.':'Tap the mark that ends it.';
+  if(cur.lv===CASE_LV) prompt=(q.step===0)?'Tap the small letter.':'Tap the mark that ends it.';
   right+='<p class="prompt">'+prompt+'</p>';
 
   const list=q.opts||OPTS[cur.lv];
-  if(cur.lv===6 && q.step===1) right+=optionRow(['.','?',','],'mark');
-  else if(list && cur.lv!==6) right+=optionRow(list);
+  if(cur.lv===CASE_LV && q.step===1) right+=optionRow(['.','?',','],'mark');
+  else if(list && cur.lv!==CASE_LV) right+=optionRow(list);
 
   area.innerHTML='<div id="playgrid">'+stageHTML(q)+'<div>'+right+'</div></div>';
 
-  if(cur.lv===6) bindCase(q);
+  if(cur.lv===CASE_LV) bindCase(q);
   else if(list) bindOptions(q,list);
   else bindTapWord(q);
 }
