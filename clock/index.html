@@ -184,6 +184,13 @@
   @keyframes sweep{from{transform:rotate(0deg);}to{transform:rotate(var(--a));}}
 
   .flyban{position:absolute; font-size:2rem; pointer-events:none; z-index:40; animation:fly 1s ease-out forwards;}
+  .sparkle{position:absolute; width:9px; height:9px; border-radius:50%; pointer-events:none;
+    z-index:45; opacity:0; animation:sparkleUp 1.3s ease-out forwards;
+    box-shadow:0 0 7px rgba(255,201,60,.85);}
+  @keyframes sparkleUp{
+    0%{transform:translate(0,0) scale(.3); opacity:0;}
+    18%{opacity:1;}
+    100%{transform:translate(var(--dx),-150px) scale(1.15); opacity:0;}}
 
   /* ---------- score ---------- */
   #score{display:none; padding:20px 18px 30px; text-align:center;}
@@ -291,23 +298,25 @@ function save(){ try{ localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){} 
 function load(){ try{ const r=localStorage.getItem(KEY); if(r) S=Object.assign(S, JSON.parse(r)); }catch(e){} }
 
 /* =========================================================
-   MONKEY VOICE — same method as the Robot Repair Shed game
+   VOICES
    ---------------------------------------------------------
-   PAPA: to change what he says, edit the lists below.
+   PAPA: to change what is said, edit the two lists below.
    Add or remove lines freely. Keep each one short.
-   Never let him say the answer.
+   Never let a line give away the answer.
    ========================================================= */
 const MONKEY_WRONG = [
-  'Wrong! I am the king!',
-  'No! You are wrong.',
-  'Wrong again! My bananas are safe.',
-  'Not that one. You are wrong.'
+  'You are WRONG!',
+  'No! Wrong!',
+  'Wrong! Look again!',
+  'That is wrong!',
+  'No! You are wrong!'
 ];
 const MONKEY_RIGHT = [
-  'Correct! Take a banana.',
-  'You are correct! Go ahead!',
-  'Right! One banana for you.',
-  'Correct! Go on then.'
+  'Correct! Well done!',
+  'You are correct! Take a banana.',
+  'Right! Very good!',
+  'Correct! Go ahead!',
+  'Yes! One banana for you.'
 ];
 /* picks a line at random, never the same one twice in a row */
 let lastLine='';
@@ -321,28 +330,87 @@ function pickLine(list){
   return t;
 }
 
-const TTS={ok:('speechSynthesis' in window) && ('SpeechSynthesisUtterance' in window), voice:null};
+const TTS={ok:('speechSynthesis' in window) && ('SpeechSynthesisUtterance' in window), voice:null, harsh:null};
 function pickVoice(){
   if(!TTS.ok) return;
   const v=window.speechSynthesis.getVoices();
   if(!v || !v.length) return;
   const want=['en-IN','en-GB','en-AU','en-US'];
-  for(const w of want){ const f=v.find(x=>x.lang && x.lang.replace('_','-')===w); if(f){ TTS.voice=f; return; } }
-  const any=v.find(x=>x.lang && x.lang.toLowerCase().indexOf('en')===0);
-  if(any) TTS.voice=any;
+  for(const w of want){ const f=v.find(x=>x.lang && x.lang.replace('_','-')===w); if(f){ TTS.voice=f; break; } }
+  const en=v.filter(x=>x.lang && x.lang.toLowerCase().indexOf('en')===0);
+  if(!TTS.voice) TTS.voice=en[0]||null;
+  /* the telling-off voice: a DIFFERENT english voice if the phone has one */
+  TTS.harsh = en.find(x=>x!==TTS.voice) || TTS.voice;
 }
 if(TTS.ok){ pickVoice(); window.speechSynthesis.onvoiceschanged=pickVoice; }
-function say(text){
+function say(text,harsh){
   if(!TTS.ok || !text) return;
   try{
     window.speechSynthesis.cancel();
     const u=new SpeechSynthesisUtterance(text);
-    if(TTS.voice) u.voice=TTS.voice;
-    u.lang=TTS.voice?TTS.voice.lang:'en-IN';
-    u.rate=0.9; u.pitch=1.5; u.volume=1;
+    const v = harsh ? (TTS.harsh||TTS.voice) : TTS.voice;
+    if(v){ u.voice=v; u.lang=v.lang; } else { u.lang='en-IN'; }
+    if(harsh){ u.rate=0.82; u.pitch=0.55; }   /* low and slow = a proper telling-off */
+    else     { u.rate=0.95; u.pitch=1.45; }   /* the monkey */
+    u.volume=1;
     window.speechSynthesis.speak(u);
   }catch(e){}
 }
+
+/* ---------- clapping, made by the browser, no sound files ---------- */
+let ac=null;
+function actx(){
+  try{
+    const AC=window.AudioContext||window.webkitAudioContext;
+    if(!AC) return null;
+    if(!ac) ac=new AC();
+    if(ac.state==='suspended') ac.resume();
+    return ac;
+  }catch(e){ return null; }
+}
+function applause(){
+  const c=actx(); if(!c) return;
+  try{
+    const dur=1.2, sr=c.sampleRate, buf=c.createBuffer(1,Math.floor(sr*dur),sr), d=buf.getChannelData(0);
+    const claps=90, clen=Math.floor(sr*0.02);
+    for(let k=0;k<claps;k++){
+      const at=Math.floor(Math.random()*Math.random()*d.length*0.92);
+      for(let j=0;j<clen && at+j<d.length;j++)
+        d[at+j]+=(Math.random()*2-1)*Math.exp(-j/(clen*0.3))*0.35;
+    }
+    const src=c.createBufferSource(); src.buffer=buf;
+    const bp=c.createBiquadFilter(); bp.type='bandpass'; bp.frequency.value=1900; bp.Q.value=0.7;
+    const g=c.createGain();
+    g.gain.setValueAtTime(0.45,c.currentTime);                       /* under the words, not over them */
+    g.gain.exponentialRampToValueAtTime(0.001,c.currentTime+dur);
+    src.connect(bp); bp.connect(g); g.connect(c.destination);
+    src.start();
+  }catch(e){}
+}
+
+/* ---------- sparkles, kept to the screen edges so the dial stays plain ---------- */
+function sparkle(){
+  try{
+    if(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const app=document.getElementById('app'); if(!app) return;
+    const w=app.clientWidth||320, h=app.clientHeight||window.innerHeight;
+    const band=Math.min(46,w*0.14);   /* narrow strip at each edge — never over the dial */
+    const cols=['#FFC93C','#7FC241','#F4772E','#2E9E5B','#fff'];
+    for(let i=0;i<18;i++){
+      const s=document.createElement('div');
+      s.className='sparkle';
+      s.style.left=((i%2===0) ? Math.random()*band : w-9-Math.random()*band)+'px';
+      s.style.top=(h*0.2+Math.random()*h*0.55)+'px';
+      s.style.background=cols[i%cols.length];
+      s.style.setProperty('--dx',(Math.random()*50-25)+'px');
+      s.style.animationDelay=Math.floor(Math.random()*300)+'ms';
+      app.appendChild(s);
+      setTimeout(()=>{ if(s.parentNode) s.remove(); },2000);
+    }
+  }catch(e){}
+}
+function cheer(){ applause(); sparkle(); }
+
 function stopTalking(){ try{ if(TTS.ok) window.speechSynthesis.cancel(); }catch(e){} }
 
 /* =========================================================
@@ -827,7 +895,7 @@ function renderMake(){
 
 /* ---- feedback ---- */
 function markRight(extra,hindi){
-  say(pickLine(MONKEY_RIGHT));
+  say(pickLine(MONKEY_RIGHT)); cheer();
   const f=document.getElementById('feedback');
   f.className='feedback good';
   let t=(cur.tries===0?'🍌 Correct! One banana from '+mName()+'!':'🍌 Correct! He was wrong again!');
@@ -841,7 +909,7 @@ function markRight(extra,hindi){
   b.textContent=(cur.i===cur.qs.length-1)?'Finish level ▶':'Next ▶';
 }
 function markWrong(q){
-  say(pickLine(MONKEY_WRONG));
+  say(pickLine(MONKEY_WRONG),true);
   cur.tries++;
   const f=document.getElementById('feedback');
   f.className='feedback again';
