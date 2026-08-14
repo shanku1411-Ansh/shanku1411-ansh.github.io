@@ -293,10 +293,33 @@ function load(){ try{ const r=localStorage.getItem(KEY); if(r) S=Object.assign(S
 /* =========================================================
    MONKEY VOICE — same method as the Robot Repair Shed game
    ---------------------------------------------------------
-   PAPA: to change what he says, edit these two lines only.
+   PAPA: to change what he says, edit the lists below.
+   Add or remove lines freely. Keep each one short.
+   Never let him say the answer.
    ========================================================= */
-const MONKEY_WRONG = 'Ha ha ha ha! You are wrong!';
-const MONKEY_RIGHT = 'You are correct! Go ahead!';
+const MONKEY_WRONG = [
+  'Wrong! I am the king!',
+  'No! You are wrong.',
+  'Wrong again! My bananas are safe.',
+  'Not that one. You are wrong.'
+];
+const MONKEY_RIGHT = [
+  'Correct! Take a banana.',
+  'You are correct! Go ahead!',
+  'Right! One banana for you.',
+  'Correct! Go on then.'
+];
+/* picks a line at random, never the same one twice in a row */
+let lastLine='';
+function pickLine(list){
+  if(!list || !list.length) return '';
+  if(list.length===1) return list[0];
+  let t=list[Math.floor(Math.random()*list.length)];
+  let guard=0;
+  while(t===lastLine && guard<8){ t=list[Math.floor(Math.random()*list.length)]; guard++; }
+  lastLine=t;
+  return t;
+}
 
 const TTS={ok:('speechSynthesis' in window) && ('SpeechSynthesisUtterance' in window), voice:null};
 function pickVoice(){
@@ -804,7 +827,7 @@ function renderMake(){
 
 /* ---- feedback ---- */
 function markRight(extra,hindi){
-  say(MONKEY_RIGHT);
+  say(pickLine(MONKEY_RIGHT));
   const f=document.getElementById('feedback');
   f.className='feedback good';
   let t=(cur.tries===0?'🍌 Correct! One banana from '+mName()+'!':'🍌 Correct! He was wrong again!');
@@ -818,7 +841,7 @@ function markRight(extra,hindi){
   b.textContent=(cur.i===cur.qs.length-1)?'Finish level ▶':'Next ▶';
 }
 function markWrong(q){
-  say(MONKEY_WRONG);
+  say(pickLine(MONKEY_WRONG));
   cur.tries++;
   const f=document.getElementById('feedback');
   f.className='feedback again';
