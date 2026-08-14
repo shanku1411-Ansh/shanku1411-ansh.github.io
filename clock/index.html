@@ -177,6 +177,8 @@
   .pivot{fill:var(--ink);}
   .ghost{stroke:#c9bfa8; stroke-width:5; stroke-dasharray:6 6;}
   .hit{fill:transparent; cursor:pointer;}
+  svg.clock.grab{touch-action:none; cursor:grab;}
+  svg.clock.grab:active{cursor:grabbing;}
   .hit.flashgood{fill:rgba(46,158,91,.45);}
   .hit.flashbad{fill:rgba(216,54,58,.4);}
   .sweep{transform-origin:110px 110px; animation:sweep .85s cubic-bezier(.25,.9,.3,1) both;}
@@ -863,15 +865,44 @@ function flyBanana(fromEl){
   }
 }
 
-/* ---- Level 7 ---- */
+/* ---- Level 7 — DRAG THE HANDS ---- */
+/* PAPA: the line the monkey speaks when the hour hand creeps is CREEP_LINE below. */
+const CREEP_LINE='It moved! The short hand always creeps when the minutes go.';
+const HOURLEN=48, MINLEN=74.9;
+
+function handLine(cls,len,deg,id){
+  return '<line'+(id?' id="'+id+'"':'')+' class="'+cls+'" x1="110" y1="110" x2="110" y2="'+
+         (110-len).toFixed(1)+'" transform="rotate('+deg.toFixed(2)+' 110 110)"/>';
+}
+function animateHand(el,from,to,ms,done){
+  const t0=performance.now();
+  (function tick(t){
+    const k=Math.min(1,(t-t0)/ms);
+    const e=k<.5?2*k*k:1-Math.pow(-2*k+2,2)/2;
+    el.setAttribute('transform','rotate('+(from+(to-from)*e).toFixed(2)+' 110 110)');
+    if(k<1) requestAnimationFrame(tick); else if(done) done();
+  })(t0);
+}
+
 function renderMake(){
   const q=cur.qs[cur.i],area=document.getElementById('qarea');
-  const wantHour=q.h,wantMin=(q.m===0)?12:q.m/5,step=q.step;
-  const ask=step===0?'Put the SHORT hand. Tap the hour number.':'Now the LONG hand. Tap where it points.';
-  area.innerHTML='<div class="qgrid"><div class="clockwrap">'+
-    clockSVG({h:q.h,m:q.m,showHour:step>0,showMinute:false,
-      ghostHour:step===0,ghostMinute:step===1,tapNumbers:true,minuteLabels:step===1})+
-    '</div><div><div class="digital">'+digital(q.h,q.m)+'</div><p class="qtext">'+ask+'</p></div></div>';
+  const step=q.step, wantMin=(q.m===0)?12:q.m/5;
+  const wantDeg=step===0?(q.h%12)*30:q.m*6;
+  const trueHourDeg=(q.h%12)*30+q.m*0.5;
+  if(q.dragDeg==null) q.dragDeg=0;
+
+  const ask=step===0?'Drag the SHORT hand to the hour.':'Now drag the LONG hand.';
+  let face=clockSVG({h:q.h,m:q.m,showHour:false,showMinute:false,minuteLabels:step===1});
+  let hands='';
+  if(step===1) hands+=handLine('hourhand',HOURLEN,trueHourDeg);
+  hands+=handLine(step===0?'hourhand':'minhand',step===0?HOURLEN:MINLEN,q.dragDeg,'draghand');
+  hands+='<circle class="pivot" cx="110" cy="110" r="6"/>';
+  face=face.replace('</svg>',hands+'</svg>').replace('class="clock"','class="clock grab"');
+
+  area.innerHTML='<div class="qgrid"><div class="clockwrap">'+face+
+    '</div><div><div class="digital">'+digital(q.h,q.m)+'</div><p class="qtext" id="makeask">'+ask+
+    '</p><button class="btn green" id="donebtn">Done</button></div></div>';
+
   const hint=step===0
     ?{monkey:'The hour? Use the second number, of course. The bigger number is more important.',
       check:'In '+digital(q.h,q.m)+', the FIRST number is the hour.'}
@@ -880,16 +911,33 @@ function renderMake(){
         check:'Zero minutes means the long hand points straight up at 12.'}
       :{monkey:q.m+' minutes? Put it on number '+String(q.m)[0]+'. The number is right there in '+q.m+'!',
         check:'Count in fives until you reach '+q.m+'. That lands on number '+wantMin+'.'});
-  area.querySelectorAll('.hit').forEach(el=>{
-    el.addEventListener('click',()=>{
-      const n=parseInt(el.getAttribute('data-num'),10);
-      const want=step===0?wantHour:wantMin;
-      if(n===want){
-        el.classList.add('flashgood');
-        if(step===0){ const keep=cur.tries; q.step=1; setTimeout(()=>{renderMake(); cur.tries=keep;},450); }
-        else { flyBanana(el.closest('svg')); markRight(engTime(q.h,q.m), hinTime(q.h,q.m)); }
-      } else { el.classList.add('flashbad'); setTimeout(()=>el.classList.remove('flashbad'),500); markWrong(hint); }
-    });
+
+  const svg=area.querySelector('svg.clock'), hand=area.querySelector('#draghand');
+  let down=false;
+  function place(ev){
+    const r=svg.getBoundingClientRect();
+    let d=Math.atan2(ev.clientX-(r.left+r.width/2),(r.top+r.height/2)-ev.clientY)*180/Math.PI;
+    if(d<0) d+=360;
+    d=Math.round(d/30)*30; if(d>=360) d-=360;
+    q.dragDeg=d;
+    hand.setAttribute('transform','rotate('+d+' 110 110)');
+  }
+  svg.addEventListener('pointerdown',e=>{down=true; try{svg.setPointerCapture(e.pointerId);}catch(x){} place(e); e.preventDefault();});
+  svg.addEventListener('pointermove',e=>{ if(down) place(e); });
+  svg.addEventListener('pointerup',()=>{down=false;});
+  svg.addEventListener('pointercancel',()=>{down=false;});
+
+  document.getElementById('donebtn').addEventListener('click',()=>{
+    if(q.dragDeg!==wantDeg){ markWrong(hint); return; }
+    if(step===1){ flyBanana(svg); markRight(engTime(q.h,q.m),hinTime(q.h,q.m)); return; }
+    const keep=cur.tries, moves=(trueHourDeg!==wantDeg);
+    document.getElementById('donebtn').disabled=true;
+    if(moves){
+      document.getElementById('makeask').textContent=CREEP_LINE;
+      say(CREEP_LINE);
+      animateHand(hand,wantDeg,trueHourDeg,900);
+    }
+    setTimeout(()=>{ q.step=1; q.dragDeg=0; renderMake(); cur.tries=keep; }, moves?2600:450);
   });
 }
 
