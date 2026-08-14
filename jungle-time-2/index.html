@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>Jungle Time 2: The Great Clock Rescue</title>
+<title>Jungle Time 2: Full Adventure</title>
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&family=Andika:wght@400;700&display=swap" rel="stylesheet">
 <style>
   :root{
@@ -11,7 +11,7 @@
     --sun:#FFC93C; --kesari:#F4772E; --cream:#FFF6E3; --red:#D8363A; --blue:#1B4B8F; --ink:#26221E;
     --head:'Baloo 2',system-ui,sans-serif; --body:'Andika',system-ui,sans-serif;
   }
-  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent; touch-action:manipulation;}
   body{ margin:0; font-family:var(--body); color:var(--ink); background:var(--jungle); display:flex; justify-content:center; min-height:100vh; overflow-x:hidden; }
   
   #app{ width:100%; max-width:500px; background:var(--cream); min-height:100vh; position:relative; overflow:hidden; box-shadow:0 0 40px rgba(0,0,0,0.5); display:flex; flex-direction:column; }
@@ -19,64 +19,60 @@
   header{ background:linear-gradient(160deg,var(--leaf) 0%,var(--jungle) 100%); text-align:center; padding:16px 10px; color:var(--cream); position:relative; z-index:10; }
   header h1{ margin:0; font-family:var(--head); font-weight:800; font-size:1.6rem; text-shadow:2px 2px 0 rgba(0,0,0,.35); }
   
-  .screen{ flex:1; display:none; flex-direction:column; padding:20px; position:relative; }
+  .screen{ flex:1; display:none; flex-direction:column; padding:16px; position:relative; }
   .screen.active{ display:flex; }
   
-  /* Typography & Buttons */
-  h2{ font-family:var(--head); color:var(--jungle); font-size:1.4rem; text-align:center; margin:10px 0; }
-  p{ font-size:1.1rem; line-height:1.5; text-align:center; font-weight:700; }
-  .btn{ display:block; width:100%; border:4px solid var(--ink); border-radius:16px; padding:16px; font-family:var(--head); font-size:1.2rem; font-weight:800; cursor:pointer; background:var(--sun); color:var(--ink); box-shadow:0 6px 0 rgba(38,34,30,.35); margin-top:20px; transition:transform 0.1s; }
+  h2{ font-family:var(--head); color:var(--jungle); font-size:1.3rem; text-align:center; margin:8px 0; }
+  p{ font-size:1rem; line-height:1.4; text-align:center; font-weight:700; margin:4px 0;}
+  
+  .btn{ display:block; width:100%; border:4px solid var(--ink); border-radius:16px; padding:14px; font-family:var(--head); font-size:1.1rem; font-weight:800; cursor:pointer; background:var(--sun); color:var(--ink); box-shadow:0 6px 0 rgba(38,34,30,.35); margin-top:16px; transition:transform 0.1s; }
   .btn:active{ transform:translateY(4px); box-shadow:0 2px 0 rgba(38,34,30,.35); }
   .btn.green{ background:var(--leaf); color:#fff; }
+  .btn.small{ padding:8px; font-size:0.9rem; width:auto; margin:4px;}
   
   /* Monkey UI */
-  .monkey-box{ background:#fff; border:4px solid var(--kesari); border-radius:20px; padding:16px; margin:20px 0; position:relative; box-shadow:0 8px 0 rgba(0,0,0,0.1); }
-  .monkey-box::before{ content:'🐒'; position:absolute; top:-24px; left:20px; font-size:2.5rem; background:var(--cream); padding:0 8px; }
-  .monkey-text{ font-family:var(--head); font-weight:800; color:var(--jungle); font-size:1.1rem; font-style:italic; margin:0; }
+  .monkey-box{ background:#fff; border:4px solid var(--kesari); border-radius:20px; padding:14px; margin:12px 0; position:relative; box-shadow:0 8px 0 rgba(0,0,0,0.1); }
+  .monkey-box::before{ content:'🐒'; position:absolute; top:-20px; left:16px; font-size:2.2rem; background:var(--cream); padding:0 6px; }
+  .monkey-text{ font-family:var(--head); font-weight:800; color:var(--jungle); font-size:1rem; font-style:italic; margin:0; text-align:left; }
   
   /* Game Area */
-  #game-area{ flex:1; position:relative; display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:400px; }
+  #game-area{ flex:1; position:relative; display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:320px; }
+  
+  /* Level Progress */
+  #progress-bar{ display:flex; gap:4px; margin-bottom:10px; width:100%; }
+  .dot{ flex:1; height:8px; background:#ddd; border-radius:4px; }
+  .dot.done{ background:var(--leaf); }
+  .dot.active{ background:var(--sun); animation:pulse 1s infinite; }
   
   /* The Clock SVG */
-  #clock-svg{ width:100%; max-width:320px; height:auto; touch-action:none; user-select:none; -webkit-user-select:none; }
+  #clock-svg{ width:100%; max-width:300px; height:auto; touch-action:none; user-select:none; -webkit-user-select:none; }
   .clock-face{ fill:#fff; stroke:var(--ink); stroke-width:6; }
   .clock-rim{ fill:none; stroke:var(--sun); stroke-width:10; }
   .tick{ stroke:var(--ink); stroke-width:3; }
   .tick5{ stroke:var(--ink); stroke-width:6; }
-  .num-txt{ font-family:var(--head); font-weight:800; font-size:24px; fill:var(--ink); text-anchor:middle; dominant-baseline:central; pointer-events:none; }
-  .pivot{ fill:var(--ink); }
+  .num-txt{ font-family:var(--head); font-weight:800; font-size:22px; fill:var(--ink); text-anchor:middle; dominant-baseline:central; pointer-events:none; }
+  .pivot{ fill:var(--ink); pointer-events:none; }
   
-  /* Draggable Elements (HTML overlays for Levels 1 & 2) */
+  /* Digital Display */
+  #digital-display{ font-family:var(--head); font-weight:800; font-size:2rem; color:var(--ink); background:var(--sun); border:4px solid var(--ink); border-radius:16px; padding:4px 20px; margin-bottom:16px; box-shadow:0 4px 0 rgba(0,0,0,0.2); letter-spacing:2px; min-width:120px; text-align:center; }
+  
+  /* Draggable Elements (HTML) */
   .draggable{ position:absolute; cursor:grab; touch-action:none; user-select:none; -webkit-user-select:none; z-index:20; transition:transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
   .draggable.dragging{ cursor:grabbing; z-index:100; transform:scale(1.15); filter:drop-shadow(0 10px 10px rgba(0,0,0,0.3)); transition:none; }
   .draggable.snapped{ pointer-events:none; opacity:1; transform:scale(1); transition:transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
   
-  .num-circle{ width:48px; height:48px; background:var(--cream); border:4px solid var(--ink); border-radius:50%; display:flex; align-items:center; justify-content:center; font-family:var(--head); font-weight:800; font-size:1.4rem; color:var(--ink); box-shadow:0 4px 0 rgba(0,0,0,0.2); }
+  .num-circle{ width:44px; height:44px; background:var(--cream); border:4px solid var(--ink); border-radius:50%; display:flex; align-items:center; justify-content:center; font-family:var(--head); font-weight:800; font-size:1.3rem; color:var(--ink); box-shadow:0 4px 0 rgba(0,0,0,0.2); }
   
-  .hand-piece{ width:60px; padding:10px; background:var(--cream); border:4px solid var(--ink); border-radius:12px; display:flex; flex-direction:column; align-items:center; gap:4px; box-shadow:0 4px 0 rgba(0,0,0,0.2); }
-  .hand-piece .line{ width:8px; background:var(--blue); border-radius:4px; }
-  .hand-piece .line.min{ background:var(--red); width:6px; height:80px; }
-  .hand-piece .line.hr{ height:50px; }
-  .hand-piece .label{ font-family:var(--head); font-weight:800; font-size:0.8rem; color:var(--jungle); text-transform:uppercase; }
-
-  /* SVG Hands (Level 3) */
-  .svg-hand{ cursor:grab; touch-action:none; }
-  .svg-hand.dragging{ cursor:grabbing; }
-  .hit-area{ fill:transparent; pointer-events:all; }
-  
-  /* Digital Display */
-  #digital-display{ font-family:var(--head); font-weight:800; font-size:2.5rem; color:var(--ink); background:var(--sun); border:4px solid var(--ink); border-radius:16px; padding:8px 24px; margin-bottom:20px; box-shadow:0 6px 0 rgba(0,0,0,0.2); letter-spacing:4px; min-width:160px; text-align:center; }
-  
-  /* Feedback & Animations */
-  #feedback{ position:fixed; bottom:20px; left:50%; transform:translateX(-50%); width:90%; max-width:400px; background:var(--leaf); color:#fff; padding:16px; border-radius:16px; font-family:var(--head); font-weight:800; font-size:1.2rem; text-align:center; box-shadow:0 8px 0 rgba(0,0,0,0.3); z-index:200; display:none; animation:slideUp 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+  /* Feedback */
+  #feedback{ position:fixed; bottom:20px; left:50%; transform:translateX(-50%); width:90%; max-width:400px; background:var(--leaf); color:#fff; padding:14px; border-radius:16px; font-family:var(--head); font-weight:800; font-size:1.1rem; text-align:center; box-shadow:0 6px 0 rgba(0,0,0,0.3); z-index:200; display:none; }
   #feedback.error{ background:var(--red); }
   
-  @keyframes slideUp{ from{transform:translate(-50%, 100px); opacity:0;} to{transform:translate(-50%, 0); opacity:1;} }
-  @keyframes pop{ 0%{transform:scale(1);} 50%{transform:scale(1.3);} 100%{transform:scale(1);} }
-  .pop-anim{ animation:pop 0.4s ease-out; }
+  @keyframes pulse{ 0%{opacity:1;} 50%{opacity:0.5;} 100%{opacity:1;} }
+  @keyframes pop{ 0%{transform:scale(1);} 50%{transform:scale(1.2);} 100%{transform:scale(1);} }
+  .pop-anim{ animation:pop 0.3s ease-out; }
   
   /* Sparkles */
-  .sparkle{ position:absolute; width:12px; height:12px; background:var(--sun); border-radius:50%; pointer-events:none; z-index:150; opacity:0; box-shadow:0 0 10px var(--sun); }
+  .sparkle{ position:absolute; width:10px; height:10px; background:var(--sun); border-radius:50%; pointer-events:none; z-index:150; opacity:0; box-shadow:0 0 8px var(--sun); }
 </style>
 </head>
 <body>
@@ -86,37 +82,39 @@
     <h1>🌿 Jungle Time 2 🐒</h1>
   </header>
 
-  <!-- SCREEN 1: INTRO -->
+  <!-- SCREEN: INTRO -->
   <div id="screen-intro" class="screen active">
     <h2>The Great Clock Rescue</h2>
     <div class="monkey-box">
-      <p class="monkey-text">"I smashed the Great Jungle Clock! Now nobody knows when to give me bananas! Try to fix it, little one... you can't!"</p>
+      <p class="monkey-text">"I have hidden the jungle's time! Nobody knows when to eat, sleep, or play! Fix my clocks, little one... if you can!"</p>
     </div>
-    <p>Pinku, Tara, and the animals are confused. They don't know what time it is!<br><br>Use your finger to rebuild the clock and save the jungle.</p>
-    <button class="btn green" onclick="startLevel(1)">Start Rescue! 🛠️</button>
+    <p>Anshu must master the clock to save the jungle. 8 levels stand in your way.</p>
+    <button class="btn green" onclick="Game.start()">Start Adventure! 🛠️</button>
   </div>
 
-  <!-- SCREEN 2: GAMEPLAY -->
+  <!-- SCREEN: GAMEPLAY -->
   <div id="screen-game" class="screen">
-    <div id="level-title" style="text-align:center; font-family:var(--head); font-weight:800; color:var(--leaf); font-size:1.2rem; margin-bottom:10px;">LEVEL 1</div>
+    <div id="progress-bar"></div>
+    <div id="level-title" style="text-align:center; font-family:var(--head); font-weight:800; color:var(--leaf); font-size:1.1rem; margin-bottom:8px;">LEVEL 1</div>
     <div id="digital-display" style="display:none;">08:15</div>
     
     <div id="game-area">
-      <!-- The SVG Clock and Draggable HTML elements will be injected here by JS -->
+      <!-- Clock and Draggables injected here -->
     </div>
     
-    <div id="instructions" style="text-align:center; font-family:var(--head); font-weight:800; color:var(--jungle); font-size:1.1rem; margin-top:20px;">
+    <div id="instructions" style="text-align:center; font-family:var(--head); font-weight:800; color:var(--jungle); font-size:1rem; margin-top:12px; min-height:40px;">
       Drag the numbers to the clock!
     </div>
+    <button class="btn" id="check-btn" style="display:none;" onclick="Game.checkAnswer()">Check Time ✅</button>
   </div>
 
-  <!-- SCREEN 3: WIN -->
+  <!-- SCREEN: WIN -->
   <div id="screen-win" class="screen">
     <h2>🍌 Jungle Saved! 🍌</h2>
     <div class="monkey-box">
-      <p class="monkey-text">"Fine! FINE! You fixed it and you know the secret of the creeping hand! Take my bananas!"</p>
+      <p class="monkey-text">"Fine! You beat me! You even know the secret of the creeping hand! Take all my bananas!"</p>
     </div>
-    <p>You are the Master of Time, Anshu!</p>
+    <p>Anshu is the true Master of Time!</p>
     <button class="btn green" onclick="location.reload()">Play Again</button>
   </div>
 
@@ -126,154 +124,426 @@
 
 <script>
 /* =========================================================
-   JUNGLE TIME 2: CORE ENGINE
+   JUNGLE TIME 2: FULL CURRICULUM ENGINE
    ========================================================= */
 
-const state = {
-  currentLevel: 0,
-  placedNumbers: 0,
-  placedHands: 0,
-  targetHour: 8,
-  targetMin: 15,
-  minAngle: 0,
-  hourAngle: 0
+const AudioEngine = {
+  ctx: null,
+  init() { if (!this.ctx) this.ctx = new (window.AudioContext || window.webkitAudioContext)(); },
+  play(freq, type, dur) {
+    if (!this.ctx) return;
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+    osc.type = type; osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+    gain.gain.setValueAtTime(0.1, this.ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + dur);
+    osc.connect(gain); gain.connect(this.ctx.destination);
+    osc.start(); osc.stop(this.ctx.currentTime + dur);
+  },
+  pop() { this.play(600, 'sine', 0.1); setTimeout(() => this.play(900, 'sine', 0.1), 50); },
+  error() { this.play(150, 'sawtooth', 0.3); },
+  win() { [0, 100, 200, 300].forEach((d, i) => setTimeout(() => this.play(400 + i*100, 'triangle', 0.15), d)); }
 };
 
-const app = document.getElementById('app');
-const gameArea = document.getElementById('game-area');
-const feedbackEl = document.getElementById('feedback');
+const Game = {
+  currentLevel: 0,
+  levels: [
+    { id:1, title:"Fix the Face", task:"Drag the numbers 1-12 to the clock!", type:"numbers" },
+    { id:2, title:"The Short Hand", task:"Drag the SHORT hand to match the hour.", type:"hour_only", targets:[3, 7, 11] },
+    { id:3, title:"The Long Hand", task:"Drag the LONG hand to the minutes.", type:"min_only", targets:[15, 30, 45] },
+    { id:4, title:"O'Clock", task:"Set the clock to the time shown.", type:"full", targets:["02:00", "09:00"] },
+    { id:5, title:"Half Past", task:"Set the clock to half past the hour.", type:"full", targets:["04:30", "10:30"] },
+    { id:6, title:"Quarters", task:"Set the clock to quarter past or to.", type:"full", targets:["03:15", "08:45"] },
+    { id:7, title:"The Secret Creep", task:"Set to 08:15. Watch closely!", type:"creep" },
+    { id:8, title:"Monkey's Gauntlet", task:"Set 3 clocks fast to win!", type:"gauntlet", targets:["05:00", "02:30", "06:15"] }
+  ],
+  gauntletIndex: 0,
 
-function showScreen(id) {
-  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
-}
+  start() {
+    AudioEngine.init();
+    this.currentLevel = 1;
+    this.showScreen('screen-game');
+    this.loadLevel();
+  },
 
-function showFeedback(msg, isError = false) {
-  feedbackEl.textContent = msg;
-  feedbackEl.className = isError ? 'error' : '';
-  feedbackEl.style.display = 'block';
-  setTimeout(() => { feedbackEl.style.display = 'none'; }, 2500);
-}
+  loadLevel() {
+    const lv = this.levels.find(l => l.id === this.currentLevel);
+    if (!lv) { this.winGame(); return; }
 
-/* ---------- AUDIO (Web Audio API for satisfying pops) ---------- */
-let audioCtx;
-function playSound(freq, type, duration) {
-  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-  const osc = audioCtx.createOscillator();
-  const gain = audioCtx.createGain();
-  osc.type = type;
-  osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-  gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
-  gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
-  osc.connect(gain);
-  gain.connect(audioCtx.destination);
-  osc.start();
-  osc.stop(audioCtx.currentTime + duration);
-}
-function playPop() { playSound(600, 'sine', 0.1); setTimeout(() => playSound(900, 'sine', 0.15), 50); }
-function playError() { playSound(150, 'sawtooth', 0.3); }
-function playWin() { [0, 150, 300, 450].forEach((d, i) => setTimeout(() => playSound(400 + i*100, 'triangle', 0.2), d)); }
+    document.getElementById('level-title').textContent = `LEVEL ${lv.id}: ${lv.title}`;
+    document.getElementById('instructions').textContent = lv.task;
+    
+    // Render Progress Bar
+    const pb = document.getElementById('progress-bar');
+    pb.innerHTML = '';
+    for(let i=1; i<=8; i++) {
+      const d = document.createElement('div');
+      d.className = 'dot' + (i < this.currentLevel ? ' done' : (i === this.currentLevel ? ' active' : ''));
+      pb.appendChild(d);
+    }
 
-/* ---------- SPARKLE EFFECT ---------- */
-function createSparkles(x, y) {
-  for (let i = 0; i < 8; i++) {
-    const s = document.createElement('div');
-    s.className = 'sparkle';
-    s.style.left = x + 'px';
-    s.style.top = y + 'px';
-    const angle = (i / 8) * Math.PI * 2;
-    const dist = 40 + Math.random() * 40;
-    const dx = Math.cos(angle) * dist;
-    const dy = Math.sin(angle) * dist;
-    s.style.transition = 'all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
-    app.appendChild(s);
-    requestAnimationFrame(() => {
-      s.style.transform = `translate(${dx}px, ${dy}px) scale(0)`;
-      s.style.opacity = '1';
+    const area = document.getElementById('game-area');
+    area.innerHTML = '';
+    document.getElementById('check-btn').style.display = 'none';
+    document.getElementById('digital-display').style.display = 'none';
+
+    if (lv.type === 'numbers') this.renderLevelNumbers();
+    else if (lv.type === 'hour_only') this.renderLevelHourOnly();
+    else if (lv.type === 'min_only') this.renderLevelMinOnly();
+    else if (lv.type === 'full') this.renderLevelFull(lv.targets.shift()); // consume target
+    else if (lv.type === 'creep') this.renderLevelCreep();
+    else if (lv.type === 'gauntlet') this.renderGauntlet();
+  },
+
+  nextLevel() {
+    this.currentLevel++;
+    this.loadLevel();
+  },
+
+  showFeedback(msg, isError = false) {
+    const f = document.getElementById('feedback');
+    f.textContent = msg;
+    f.className = isError ? 'error' : '';
+    f.style.display = 'block';
+    if (!isError) AudioEngine.pop();
+    setTimeout(() => { f.style.display = 'none'; }, 2000);
+  },
+
+  createSparkles(x, y) {
+    const app = document.getElementById('app');
+    for (let i = 0; i < 6; i++) {
+      const s = document.createElement('div');
+      s.className = 'sparkle';
+      s.style.left = x + 'px'; s.style.top = y + 'px';
+      const ang = (i / 6) * Math.PI * 2;
+      const dist = 30 + Math.random() * 30;
+      s.style.transition = 'all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+      app.appendChild(s);
+      requestAnimationFrame(() => {
+        s.style.transform = `translate(${Math.cos(ang)*dist}px, ${Math.sin(ang)*dist}px) scale(0)`;
+        s.style.opacity = '1';
+      });
+      setTimeout(() => s.remove(), 600);
+    }
+  },
+
+  createClockSVG(showNumbers = true, showHour = true, showMin = true) {
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.setAttribute('id', 'clock-svg');
+    svg.setAttribute('viewBox', '0 0 300 300');
+    
+    svg.innerHTML = `
+      <circle cx="150" cy="150" r="130" class="clock-face"/>
+      <circle cx="150" cy="150" r="140" class="clock-rim"/>
+      ${Array.from({length:60}, (_,i) => {
+        const a = (i*6-90)*Math.PI/180; const isMaj = i%5===0;
+        return `<line x1="${150+(isMaj?110:118)*Math.cos(a)}" y1="${150+(isMaj?110:118)*Math.sin(a)}" x2="${150+125*Math.cos(a)}" y2="${150+125*Math.sin(a)}" class="${isMaj?'tick5':'tick'}"/>`;
+      }).join('')}
+      ${Array.from({length:12}, (_,i) => {
+        const n=i+1; const a=(n*30-90)*Math.PI/180; const r=90;
+        return `<text x="${150+r*Math.cos(a)}" y="${150+r*Math.sin(a)}" class="num-txt" id="slot-${n}" opacity="${showNumbers?'0.2':'1'}">${n}</text>`;
+      }).join('')}
+      <circle cx="150" cy="150" r="8" class="pivot" id="center-pivot"/>
+    `;
+    return svg;
+  },
+
+  /* --- LEVEL 1: NUMBERS --- */
+  renderLevelNumbers() {
+    const area = document.getElementById('game-area');
+    const svg = this.createClockSVG(true, false, false);
+    area.appendChild(svg);
+
+    const dropZones = [];
+    for(let n=1; n<=12; n++) {
+      const a=(n*30-90)*Math.PI/180; const r=90;
+      const cx = 150 + r*Math.cos(a); const cy = 150 + r*Math.sin(a);
+      const z = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+      z.setAttribute('cx', cx); z.setAttribute('cy', cy); z.setAttribute('r', '22');
+      z.setAttribute('fill', 'transparent'); z.dataset.value = n;
+      svg.appendChild(z); dropZones.push(z);
+    }
+
+    let placed = 0;
+    const nums = [1,2,3,4,5,6,7,8,9,10,11,12].sort(() => Math.random()-0.5);
+    const rect = area.getBoundingClientRect();
+
+    nums.forEach((n, i) => {
+      const el = document.createElement('div');
+      el.className = 'draggable'; el.dataset.value = n;
+      el.innerHTML = `<div class="num-circle">${n}</div>`;
+      el.style.left = (rect.width/2 + 130*Math.cos(i/12*Math.PI*2) - 22) + 'px';
+      el.style.top = (rect.height/2 + 130*Math.sin(i/12*Math.PI*2) - 22) + 'px';
+      el.style.position = 'absolute';
+      area.appendChild(el);
+
+      new DragManager(el, dropZones, (dragged) => {
+        document.getElementById(`slot-${n}`).setAttribute('opacity', '1');
+        this.createSparkles(parseFloat(el.style.left)+22, parseFloat(el.style.top)+22);
+        placed++;
+        if (placed === 12) {
+          this.showFeedback("Face Fixed! Next Level!");
+          setTimeout(() => this.nextLevel(), 1500);
+        }
+      }, () => this.showFeedback("Try again!", true));
     });
-    setTimeout(() => s.remove(), 700);
-  }
-}
+  },
 
-/* ---------- SVG CLOCK BUILDER ---------- */
-function createClockSVG(showNumbers = true, showHands = false) {
-  const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-  svg.setAttribute('id', 'clock-svg');
-  svg.setAttribute('viewBox', '0 0 300 300');
-  
-  // Background
-  const face = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-  face.setAttribute('cx', '150'); face.setAttribute('cy', '150'); face.setAttribute('r', '130');
-  face.setAttribute('class', 'clock-face');
-  svg.appendChild(face);
-  
-  const rim = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-  rim.setAttribute('cx', '150'); rim.setAttribute('cy', '150'); rim.setAttribute('r', '140');
-  rim.setAttribute('class', 'clock-rim');
-  svg.appendChild(rim);
+  /* --- LEVEL 2: HOUR ONLY --- */
+  renderLevelHourOnly() {
+    const lv = this.levels.find(l => l.id === 2);
+    if (!lv.targets.length) { this.nextLevel(); return; }
+    const targetH = lv.targets[0];
 
-  // Ticks
-  for (let i = 0; i < 60; i++) {
-    const angle = (i * 6 - 90) * Math.PI / 180;
-    const isMajor = i % 5 === 0;
-    const r1 = isMajor ? 110 : 118;
-    const r2 = 125;
-    const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-    line.setAttribute('x1', 150 + r1 * Math.cos(angle));
-    line.setAttribute('y1', 150 + r1 * Math.sin(angle));
-    line.setAttribute('x2', 150 + r2 * Math.cos(angle));
-    line.setAttribute('y2', 150 + r2 * Math.sin(angle));
-    line.setAttribute('class', isMajor ? 'tick5' : 'tick');
-    svg.appendChild(line);
-  }
+    const area = document.getElementById('game-area');
+    document.getElementById('digital-display').style.display = 'block';
+    document.getElementById('digital-display').textContent = `${targetH}:00`;
 
-  // Numbers (Empty slots for Level 1)
-  if (showNumbers) {
-    for (let n = 1; n <= 12; n++) {
-      const angle = (n * 30 - 90) * Math.PI / 180;
-      const r = 90;
-      const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-      text.setAttribute('x', 150 + r * Math.cos(angle));
-      text.setAttribute('y', 150 + r * Math.sin(angle));
-      text.setAttribute('class', 'num-txt');
-      text.setAttribute('id', `num-slot-${n}`);
-      text.setAttribute('opacity', '0.2'); // Faint placeholder
-      text.textContent = n;
-      svg.appendChild(text);
+    const svg = this.createClockSVG(false, false, false);
+    area.appendChild(svg);
+
+    // Add Draggable Hour Hand
+    const hand = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+    hand.setAttribute('class', 'draggable-hand');
+    hand.innerHTML = `<line x1="150" y1="150" x2="150" y2="80" stroke="var(--blue)" stroke-width="12" stroke-linecap="round"/>
+                      <circle cx="150" cy="80" r="30" fill="transparent" class="hit-area"/>`;
+    svg.appendChild(hand);
+
+    this.bindSVGHandDrag(hand, svg, (angle) => {
+      const snapped = Math.round(angle / 30) * 30;
+      const hourNum = (snapped / 30) % 12 || 12;
+      if (hourNum === targetH) {
+        lv.targets.shift();
+        this.showFeedback("Correct! " + targetH + " o'clock!");
+        setTimeout(() => this.loadLevel(), 1500);
+      } else {
+        this.showFeedback("That's " + hourNum + ". Look at the digital clock!", true);
+        hand.setAttribute('transform', `rotate(${snapped} 150 150)`);
+      }
+    });
+  },
+
+  /* --- LEVEL 3: MINUTE ONLY --- */
+  renderLevelMinOnly() {
+    const lv = this.levels.find(l => l.id === 3);
+    if (!lv.targets.length) { this.nextLevel(); return; }
+    const targetM = lv.targets[0];
+
+    const area = document.getElementById('game-area');
+    document.getElementById('digital-display').style.display = 'block';
+    document.getElementById('digital-display').textContent = `${targetM} mins`;
+
+    const svg = this.createClockSVG(false, false, false);
+    area.appendChild(svg);
+
+    const hand = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+    hand.setAttribute('class', 'draggable-hand');
+    hand.innerHTML = `<line x1="150" y1="150" x2="150" y2="40" stroke="var(--red)" stroke-width="8" stroke-linecap="round"/>
+                      <circle cx="150" cy="40" r="30" fill="transparent" class="hit-area"/>`;
+    svg.appendChild(hand);
+
+    this.bindSVGHandDrag(hand, svg, (angle) => {
+      const snapped = Math.round(angle / 30) * 30;
+      const minVal = (snapped / 30) * 5 % 60;
+      if (minVal === targetM) {
+        lv.targets.shift();
+        this.showFeedback("Correct! " + targetM + " minutes!");
+        setTimeout(() => this.loadLevel(), 1500);
+      } else {
+        this.showFeedback("That's " + minVal + " minutes. Count by 5s!", true);
+        hand.setAttribute('transform', `rotate(${snapped} 150 150)`);
+      }
+    });
+  },
+
+  /* --- LEVEL 4,5,6: FULL CLOCK --- */
+  renderLevelFull(targetTime) {
+    if (!targetTime) { this.nextLevel(); return; }
+    
+    const [h, m] = targetTime.split(':').map(Number);
+    const area = document.getElementById('game-area');
+    document.getElementById('digital-display').style.display = 'block';
+    document.getElementById('digital-display').textContent = targetTime;
+
+    const svg = this.createClockSVG(false, false, false);
+    area.appendChild(svg);
+
+    const hourHand = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+    hourHand.id = 'hand-hour';
+    hourHand.innerHTML = `<line x1="150" y1="150" x2="150" y2="80" stroke="var(--blue)" stroke-width="12" stroke-linecap="round"/>
+                          <circle cx="150" cy="80" r="30" fill="transparent" class="hit-area"/>`;
+    svg.appendChild(hourHand);
+
+    const minHand = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+    minHand.id = 'hand-min';
+    minHand.innerHTML = `<line x1="150" y1="150" x2="150" y2="40" stroke="var(--red)" stroke-width="8" stroke-linecap="round"/>
+                         <circle cx="150" cy="40" r="30" fill="transparent" class="hit-area"/>`;
+    svg.appendChild(minHand);
+
+    let state = { h: 0, m: 0 };
+    
+    const checkComplete = () => {
+      // Simple validation: hour is near target, min is near target
+      const hDiff = Math.abs(state.h - (h%12)*30);
+      const mDiff = Math.abs(state.m - (m/5)*30);
+      // Handle wrap around 12
+      const hDiff2 = Math.min(hDiff, 360-hDiff);
+      const mDiff2 = Math.min(mDiff, 360-mDiff);
+
+      if (hDiff2 < 16 && mDiff2 < 16) {
+        this.showFeedback("Perfect! " + targetTime);
+        setTimeout(() => this.loadLevel(), 1500);
+      }
+    };
+
+    this.bindSVGHandDrag(hourHand, svg, (angle) => { state.h = angle; checkComplete(); });
+    this.bindSVGHandDrag(minHand, svg, (angle) => { state.m = angle; checkComplete(); });
+  },
+
+  /* --- LEVEL 7: THE CREEP --- */
+  renderLevelCreep() {
+    const area = document.getElementById('game-area');
+    document.getElementById('digital-display').style.display = 'block';
+    document.getElementById('digital-display').textContent = '08:15';
+    document.getElementById('instructions').textContent = 'First, set the clock to exactly 08:00.';
+
+    const svg = this.createClockSVG(false, false, false);
+    area.appendChild(svg);
+
+    const hourHand = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+    hourHand.id = 'hand-hour';
+    hourHand.innerHTML = `<line x1="150" y1="150" x2="150" y2="80" stroke="var(--blue)" stroke-width="12" stroke-linecap="round"/>
+                          <circle cx="150" cy="80" r="30" fill="transparent" class="hit-area"/>`;
+    svg.appendChild(hourHand);
+
+    const minHand = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+    minHand.id = 'hand-min';
+    minHand.innerHTML = `<line x1="150" y1="150" x2="150" y2="40" stroke="var(--red)" stroke-width="8" stroke-linecap="round"/>
+                         <circle cx="150" cy="40" r="30" fill="transparent" class="hit-area"/>`;
+    svg.appendChild(minHand);
+
+    let state = { h: 0, m: 0 };
+    let phase = 'set8'; // 1: Set 8:00, 2: Move Min to 15
+
+    const check = () => {
+      if (phase === 'set8') {
+        const hDiff = Math.min(Math.abs(state.h - 240), 360 - Math.abs(state.h - 240));
+        const mDiff = Math.min(Math.abs(state.m - 0), 360 - Math.abs(state.m - 0));
+        if (hDiff < 16 && mDiff < 16) {
+          this.showFeedback("Good! It is 08:00.");
+          document.getElementById('instructions').textContent = 'Now, move the LONG hand to 15 minutes (the 3).';
+          phase = 'moveMin';
+        }
+      } else if (phase === 'moveMin') {
+        const mDiff = Math.min(Math.abs(state.m - 90), 360 - Math.abs(state.m - 90));
+        if (mDiff < 16) {
+          phase = 'done';
+          this.triggerCreep(hourHand);
+        }
+      }
+    };
+
+    this.bindSVGHandDrag(hourHand, svg, (angle) => { state.h = angle; check(); });
+    this.bindSVGHandDrag(minHand, svg, (angle) => { state.m = angle; check(); });
+  },
+
+  triggerCreep(hourHand) {
+    this.showFeedback("Wait... look at the short hand!");
+    document.getElementById('instructions').textContent = '🐒 "It moved! It always creeps forward when the minutes move!"';
+    
+    // 8:15 is 240 degrees + 7.5 degrees creep
+    hourHand.style.transition = 'transform 2.5s cubic-bezier(0.4, 0.0, 0.2, 1)';
+    setTimeout(() => {
+      hourHand.setAttribute('transform', `rotate(247.5 150 150)`);
+    }, 100);
+    
+    setTimeout(() => {
+      this.showFeedback("That is the secret of the clock!");
+      AudioEngine.win();
+      setTimeout(() => this.nextLevel(), 2500);
+    }, 3000);
+  },
+
+  /* --- LEVEL 8: GAUNTLET --- */
+  renderGauntlet() {
+    const lv = this.levels.find(l => l.id === 8);
+    if (this.gauntletIndex >= lv.targets.length) {
+      this.winGame();
+      return;
     }
-  } else {
-    for (let n = 1; n <= 12; n++) {
-      const angle = (n * 30 - 90) * Math.PI / 180;
-      const r = 90;
-      const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-      text.setAttribute('x', 150 + r * Math.cos(angle));
-      text.setAttribute('y', 150 + r * Math.sin(angle));
-      text.setAttribute('class', 'num-txt');
-      text.textContent = n;
-      svg.appendChild(text);
-    }
+    this.renderLevelFull(lv.targets[this.gauntletIndex]);
+    // Override nextLevel logic for gauntlet
+    const origNext = this.nextLevel.bind(this);
+    this.nextLevel = () => {
+      this.gauntletIndex++;
+      this.nextLevel = origNext; // restore
+      this.renderGauntlet();
+    };
+  },
+
+  winGame() {
+    document.getElementById('screen-game').classList.remove('active');
+    document.getElementById('screen-win').classList.add('active');
+    AudioEngine.win();
+  },
+
+  showScreen(id) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+  },
+
+  /* --- SVG DRAG LOGIC --- */
+  bindSVGHandDrag(handEl, svgEl, onComplete) {
+    let isDragging = false;
+    const pt = svgEl.createSVGPoint();
+
+    const getAngle = (evt) => {
+      let CTM = svgEl.getScreenCTM();
+      let clientX = evt.clientX, clientY = evt.clientY;
+      if (evt.touches && evt.touches.length > 0) {
+        clientX = evt.touches[0].clientX; clientY = evt.touches[0].clientY;
+      }
+      pt.x = clientX; pt.y = clientY;
+      const p = pt.matrixTransform(CTM.inverse());
+      let a = Math.atan2(p.y - 150, p.x - 150) * 180 / Math.PI;
+      return (a + 90 + 360) % 360;
+    };
+
+    const start = (e) => {
+      if (e.target.closest('.draggable-hand')) {
+        isDragging = true;
+        e.preventDefault();
+      }
+    };
+
+    const move = (e) => {
+      if (!isDragging) return;
+      e.preventDefault();
+      let a = getAngle(e);
+      let snapped = Math.round(a / 30) * 30;
+      handEl.setAttribute('transform', `rotate(${snapped} 150 150)`);
+    };
+
+    const end = (e) => {
+      if (!isDragging) return;
+      isDragging = false;
+      let a = getAngle(e);
+      let snapped = Math.round(a / 30) * 30;
+      onComplete(snapped);
+    };
+
+    svgEl.addEventListener('pointerdown', start);
+    svgEl.addEventListener('pointermove', move);
+    svgEl.addEventListener('pointerup', end);
+    svgEl.addEventListener('pointercancel', end);
   }
+};
 
-  // Pivot
-  const pivot = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-  pivot.setAttribute('cx', '150'); pivot.setAttribute('cy', '150'); pivot.setAttribute('r', '8');
-  pivot.setAttribute('class', 'pivot');
-  pivot.setAttribute('id', 'center-pivot');
-  svg.appendChild(pivot);
-
-  return svg;
-}
-
-/* ---------- DRAG & DROP MANAGER (For HTML Elements) ---------- */
+/* --- DRAG MANAGER FOR HTML ELEMENTS (Level 1) --- */
 class DragManager {
   constructor(el, dropZones, onSnap, onFail) {
-    this.el = el;
-    this.dropZones = dropZones;
-    this.onSnap = onSnap;
-    this.onFail = onFail;
-    this.isDragging = false;
-    this.startX = 0; this.startY = 0;
-    this.origX = 0; this.origY = 0;
+    this.el = el; this.dropZones = dropZones; this.onSnap = onSnap; this.onFail = onFail;
+    this.isDragging = false; this.startX = 0; this.startY = 0; this.origX = 0; this.origY = 0;
     
     this.el.style.touchAction = 'none';
     this.el.addEventListener('pointerdown', this.start.bind(this));
@@ -281,344 +551,51 @@ class DragManager {
     this.el.addEventListener('pointerup', this.end.bind(this));
     this.el.addEventListener('pointercancel', this.end.bind(this));
   }
-
   start(e) {
     if (this.el.classList.contains('snapped')) return;
-    e.preventDefault();
-    this.isDragging = true;
-    this.el.classList.add('dragging');
+    e.preventDefault(); this.isDragging = true; this.el.classList.add('dragging');
     const rect = this.el.getBoundingClientRect();
-    // Save original position if not already set
     if (!this.el.style.left) {
-      this.el.style.left = rect.left + 'px';
-      this.el.style.top = rect.top + 'px';
-      this.el.style.position = 'fixed';
-      this.el.style.margin = '0';
+      this.el.style.left = rect.left + 'px'; this.el.style.top = rect.top + 'px';
+      this.el.style.position = 'fixed'; this.el.style.margin = '0';
     }
-    this.origX = parseFloat(this.el.style.left);
-    this.origY = parseFloat(this.el.style.top);
-    this.startX = e.clientX - this.origX;
-    this.startY = e.clientY - this.origY;
+    this.origX = parseFloat(this.el.style.left); this.origY = parseFloat(this.el.style.top);
+    this.startX = e.clientX - this.origX; this.startY = e.clientY - this.origY;
     this.el.setPointerCapture(e.pointerId);
   }
-
   move(e) {
     if (!this.isDragging) return;
     e.preventDefault();
     this.el.style.left = (e.clientX - this.startX) + 'px';
     this.el.style.top = (e.clientY - this.startY) + 'px';
   }
-
   end(e) {
     if (!this.isDragging) return;
-    this.isDragging = false;
-    this.el.classList.remove('dragging');
-    
-    // Check for snap
+    this.isDragging = false; this.el.classList.remove('dragging');
     const dragRect = this.el.getBoundingClientRect();
-    const dragCx = dragRect.left + dragRect.width / 2;
-    const dragCy = dragRect.top + dragRect.height / 2;
-    
-    let closestZone = null;
-    let minDist = 60; // Snap radius in pixels
-    
-    for (let zone of this.dropZones) {
-      const zRect = zone.getBoundingClientRect();
-      const zCx = zRect.left + zRect.width / 2;
-      const zCy = zRect.top + zRect.height / 2;
-      const dist = Math.hypot(dragCx - zCx, dragCy - zCy);
-      if (dist < minDist) {
-        minDist = dist;
-        closestZone = zone;
-      }
+    const dragCx = dragRect.left + dragRect.width / 2; const dragCy = dragRect.top + dragRect.height / 2;
+    let closest = null; let minD = 50;
+    for (let z of this.dropZones) {
+      const r = z.getBoundingClientRect();
+      const cx = r.left + r.width / 2; const cy = r.top + r.height / 2;
+      const d = Math.hypot(dragCx - cx, dragCy - cy);
+      if (d < minD) { minD = d; closest = z; }
     }
-    
-    if (closestZone && closestZone.dataset.value === this.el.dataset.value) {
-      // SUCCESS SNAP
-      const zRect = closestZone.getBoundingClientRect();
+    if (closest && closest.dataset.value === this.el.dataset.value) {
+      const r = closest.getBoundingClientRect();
       this.el.style.transition = 'all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)';
-      this.el.style.left = (zRect.left + zRect.width/2 - dragRect.width/2) + 'px';
-      this.el.style.top = (zRect.top + zRect.height/2 - dragRect.height/2) + 'px';
-      this.el.classList.add('snapped');
-      this.el.classList.add('pop-anim');
-      
-      // Create sparkles at the snap location
-      createSparkles(zRect.left + zRect.width/2, zRect.top + zRect.height/2);
-      playPop();
-      
+      this.el.style.left = (r.left + r.width/2 - dragRect.width/2) + 'px';
+      this.el.style.top = (r.top + r.height/2 - dragRect.height/2) + 'px';
+      this.el.classList.add('snapped', 'pop-anim');
       if (this.onSnap) this.onSnap(this.el);
     } else {
-      // FAIL - Bounce back
       this.el.style.transition = 'all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
-      this.el.style.left = this.origX + 'px';
-      this.el.style.top = this.origY + 'px';
-      playError();
+      this.el.style.left = this.origX + 'px'; this.el.style.top = this.origY + 'px';
+      AudioEngine.error();
       if (this.onFail) this.onFail(this.el);
     }
   }
 }
-
-/* ---------- LEVEL 1: SCATTERED NUMBERS ---------- */
-function startLevel1() {
-  state.currentLevel = 1;
-  state.placedNumbers = 0;
-  document.getElementById('level-title').textContent = 'LEVEL 1: FIX THE FACE';
-  document.getElementById('instructions').textContent = 'Drag the numbers to their correct spots!';
-  document.getElementById('digital-display').style.display = 'none';
-  
-  gameArea.innerHTML = '';
-  const svg = createClockSVG(true, false);
-  gameArea.appendChild(svg);
-  
-  // Create drop zones (invisible circles over the numbers)
-  const dropZones = [];
-  for (let n = 1; n <= 12; n++) {
-    const angle = (n * 30 - 90) * Math.PI / 180;
-    const r = 90;
-    const cx = 150 + r * Math.cos(angle);
-    const cy = 150 + r * Math.sin(angle);
-    
-    const zone = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-    zone.setAttribute('cx', cx); zone.setAttribute('cy', cy); zone.setAttribute('r', '25');
-    zone.setAttribute('fill', 'transparent');
-    zone.dataset.value = n;
-    svg.appendChild(zone);
-    dropZones.push(zone);
-  }
-  
-  // Create draggable numbers (HTML overlays)
-  const nums = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
-  // Shuffle
-  nums.sort(() => Math.random() - 0.5);
-  
-  const gameRect = gameArea.getBoundingClientRect();
-  nums.forEach((n, i) => {
-    const el = document.createElement('div');
-    el.className = 'draggable';
-    el.dataset.value = n;
-    el.innerHTML = `<div class="num-circle">${n}</div>`;
-    
-    // Position randomly around the edges
-    const angle = (i / 12) * Math.PI * 2;
-    const r = 120;
-    const x = gameRect.width / 2 + r * Math.cos(angle) - 24;
-    const y = gameRect.height / 2 + r * Math.sin(angle) - 24;
-    
-    el.style.left = x + 'px';
-    el.style.top = y + 'px';
-    el.style.position = 'absolute';
-    
-    gameArea.appendChild(el);
-    
-    new DragManager(el, dropZones, (draggedEl) => {
-      // Reveal the SVG number behind it
-      const slot = document.getElementById(`num-slot-${n}`);
-      if (slot) slot.setAttribute('opacity', '1');
-      
-      state.placedNumbers++;
-      if (state.placedNumbers === 12) {
-        setTimeout(() => {
-          showFeedback("Perfect! The face is fixed!");
-          setTimeout(startLevel2, 1500);
-        }, 500);
-      }
-    }, () => {
-      showFeedback("Not quite there! Try again.", true);
-    });
-  });
-}
-
-/* ---------- LEVEL 2: ATTACH THE HANDS ---------- */
-function startLevel2() {
-  state.currentLevel = 2;
-  state.placedHands = 0;
-  document.getElementById('level-title').textContent = 'LEVEL 2: THE MISSING HANDS';
-  document.getElementById('instructions').textContent = 'Drag the hands to the center pivot!';
-  
-  gameArea.innerHTML = '';
-  const svg = createClockSVG(false, false);
-  gameArea.appendChild(svg);
-  
-  // Drop zone is the center pivot
-  const pivot = document.getElementById('center-pivot');
-  pivot.setAttribute('r', '40'); // Enlarge hit area
-  pivot.setAttribute('fill', 'transparent');
-  pivot.dataset.value = 'pivot';
-  
-  // Create draggable hands
-  const hands = [
-    { type: 'hr', label: 'SHORT', color: 'var(--blue)' },
-    { type: 'min', label: 'LONG', color: 'var(--red)' }
-  ];
-  
-  const gameRect = gameArea.getBoundingClientRect();
-  hands.forEach((h, i) => {
-    const el = document.createElement('div');
-    el.className = 'draggable';
-    el.dataset.value = 'pivot';
-    el.innerHTML = `
-      <div class="hand-piece">
-        <div class="line ${h.type}" style="background:${h.color}"></div>
-        <div class="label">${h.label}</div>
-      </div>`;
-      
-    el.style.left = (i === 0 ? 40 : gameRect.width - 100) + 'px';
-    el.style.top = (gameRect.height - 100) + 'px';
-    el.style.position = 'absolute';
-    
-    gameArea.appendChild(el);
-    
-    new DragManager(el, [pivot], () => {
-      state.placedHands++;
-      if (state.placedHands === 2) {
-        setTimeout(() => {
-          showFeedback("Hands attached! Now set the time!");
-          setTimeout(startLevel3, 1500);
-        }, 500);
-      }
-    }, () => {
-      showFeedback("Aim for the center dot!", true);
-    });
-  });
-}
-
-/* ---------- LEVEL 3: THE MAGIC CREEP (SVG Dragging) ---------- */
-function startLevel3() {
-  state.currentLevel = 3;
-  document.getElementById('level-title').textContent = 'LEVEL 3: SET THE TIME';
-  document.getElementById('instructions').textContent = 'Make the clock show 08:15';
-  document.getElementById('digital-display').style.display = 'block';
-  document.getElementById('digital-display').textContent = '08:15';
-  
-  gameArea.innerHTML = '';
-  const svg = createClockSVG(false, true);
-  gameArea.appendChild(svg);
-  
-  // Add SVG Hands
-  const hourHand = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-  hourHand.setAttribute('id', 'svg-hour');
-  hourHand.setAttribute('class', 'svg-hand');
-  hourHand.innerHTML = `
-    <line x1="150" y1="150" x2="150" y2="70" stroke="var(--blue)" stroke-width="14" stroke-linecap="round"/>
-    <circle cx="150" cy="70" r="35" class="hit-area"/>
-  `;
-  svg.appendChild(hourHand);
-  
-  const minHand = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-  minHand.setAttribute('id', 'svg-min');
-  minHand.setAttribute('class', 'svg-hand');
-  minHand.innerHTML = `
-    <line x1="150" y1="150" x2="150" y2="40" stroke="var(--red)" stroke-width="10" stroke-linecap="round"/>
-    <circle cx="150" cy="40" r="35" class="hit-area"/>
-  `;
-  svg.appendChild(minHand);
-  
-  // Re-add pivot on top
-  const pivot = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-  pivot.setAttribute('cx', '150'); pivot.setAttribute('cy', '150'); pivot.setAttribute('r', '10');
-  pivot.setAttribute('fill', 'var(--ink)');
-  svg.appendChild(pivot);
-
-  // SVG Drag Logic
-  let activeHand = null;
-  const pt = svg.createSVGPoint();
-  
-  function getSVGPoint(evt) {
-    let CTM = svg.getScreenCTM();
-    let clientX = evt.clientX, clientY = evt.clientY;
-    if (evt.touches && evt.touches.length > 0) {
-      clientX = evt.touches[0].clientX; clientY = evt.touches[0].clientY;
-    }
-    pt.x = clientX; pt.y = clientY;
-    return pt.matrixTransform(CTM.inverse());
-  }
-  
-  function startDrag(e) {
-    if (e.target.closest('.svg-hand')) {
-      activeHand = e.target.closest('.svg-hand');
-      activeHand.classList.add('dragging');
-      e.preventDefault();
-    }
-  }
-  
-  function doDrag(e) {
-    if (!activeHand) return;
-    e.preventDefault();
-    const p = getSVGPoint(e);
-    let angle = Math.atan2(p.y - 150, p.x - 150) * 180 / Math.PI;
-    angle = (angle + 90 + 360) % 360;
-    
-    // Snap to nearest 30 degrees while dragging for tactile feel
-    let snapped = Math.round(angle / 30) * 30;
-    activeHand.setAttribute('transform', `rotate(${snapped} 150 150)`);
-    
-    if (activeHand.id === 'svg-min') state.minAngle = snapped;
-    if (activeHand.id === 'svg-hour') state.hourAngle = snapped;
-  }
-  
-  function endDrag(e) {
-    if (!activeHand) return;
-    activeHand.classList.remove('dragging');
-    
-    // Check if both hands are placed roughly correctly
-    const targetHourAngle = (8 * 30); // 240
-    const targetMinAngle = (3 * 30);  // 90
-    
-    const hourDiff = Math.abs(state.hourAngle - targetHourAngle) % 360;
-    const minDiff = Math.abs(state.minAngle - targetMinAngle) % 360;
-    
-    if (hourDiff < 15 && minDiff < 15) {
-      // SUCCESS! Trigger the magic creep.
-      activeHand = null;
-      triggerCreep();
-    } else {
-      showFeedback("Check the digital clock! 08:15", true);
-      activeHand = null;
-    }
-  }
-  
-  svg.addEventListener('pointerdown', startDrag);
-  svg.addEventListener('pointermove', doDrag);
-  svg.addEventListener('pointerup', endDrag);
-  svg.addEventListener('pointercancel', endDrag);
-}
-
-/* ---------- THE MAGIC CREEP ANIMATION ---------- */
-function triggerCreep() {
-  const hourHand = document.getElementById('svg-hour');
-  
-  // Current snapped hour angle is 240 (8 o'clock)
-  // We need to creep it to 8:15. 
-  // 15 minutes = 7.5 degrees of creep.
-  const finalAngle = 240 + 7.5; 
-  
-  showFeedback("Wait... look at the short hand!");
-  
-  // Apply CSS transition to the SVG transform
-  hourHand.style.transition = 'transform 2.5s cubic-bezier(0.4, 0.0, 0.2, 1)';
-  
-  setTimeout(() => {
-    hourHand.setAttribute('transform', `rotate(${finalAngle} 150 150)`);
-  }, 100);
-  
-  setTimeout(() => {
-    showFeedback("🐒 IT MOVED! It always sneaks forward when the minutes move!");
-    playWin();
-    setTimeout(showWinScreen, 2500);
-  }, 2800);
-}
-
-function showWinScreen() {
-  showScreen('screen-win');
-}
-
-function startLevel(n) {
-  showScreen('screen-game');
-  if (n === 1) startLevel1();
-  if (n === 2) startLevel2();
-  if (n === 3) startLevel3();
-}
-
 </script>
 </body>
 </html>
