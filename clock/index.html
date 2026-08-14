@@ -291,6 +291,97 @@ function save(){ try{ localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){} 
 function load(){ try{ const r=localStorage.getItem(KEY); if(r) S=Object.assign(S, JSON.parse(r)); }catch(e){} }
 
 /* =========================================================
+   MONKEY VOICE
+   ---------------------------------------------------------
+   PAPA: to change what he says, edit these two lines only.
+   ========================================================= */
+const MONKEY_WRONG = 'Ha ha ha ha! You are wrong!';
+const MONKEY_RIGHT = 'You are correct! Go ahead!';
+
+/* --- little cartoon sounds, made by the browser, no files --- */
+let ac=null;
+function audioCtx(){
+  try{
+    if(!ac){ const AC=window.AudioContext||window.webkitAudioContext; if(!AC) return null; ac=new AC(); }
+    if(ac.state==='suspended'){ ac.resume(); }
+    return ac;
+  }catch(e){ return null; }
+}
+function blip(freq,start,dur,vol){
+  const c=audioCtx(); if(!c) return;
+  try{
+    const t=c.currentTime+start, o=c.createOscillator(), g=c.createGain();
+    o.type='triangle'; o.frequency.setValueAtTime(freq,t);
+    g.gain.setValueAtTime(0.0001,t);
+    g.gain.exponentialRampToValueAtTime(vol,t+0.02);
+    g.gain.exponentialRampToValueAtTime(0.0001,t+dur);
+    o.connect(g); g.connect(c.destination);
+    o.start(t); o.stop(t+dur+0.05);
+  }catch(e){}
+}
+function laughSound(){ [0,0.11,0.22,0.33].forEach((t,i)=>blip(560-i*45,t,0.10,0.16)); }
+function cheerSound(){ [330,440,580].forEach((f,i)=>blip(f,i*0.08,0.13,0.15)); }
+
+/* --- the phone's own speaking voice --- */
+let monkeyVoice=null, voiceReady=false;
+function pickVoice(){
+  try{
+    if(!('speechSynthesis' in window)) return;
+    const vs=window.speechSynthesis.getVoices();
+    if(!vs||!vs.length) return;
+    const en=vs.filter(v=>/^en/i.test(v.lang||''));
+    monkeyVoice = en.filter(v=>/en[-_]IN/i.test(v.lang||''))[0]
+               || en.filter(v=>/en[-_]GB/i.test(v.lang||''))[0]
+               || en[0] || vs[0];
+    voiceReady=true;
+  }catch(e){}
+}
+try{
+  if('speechSynthesis' in window){
+    pickVoice();
+    window.speechSynthesis.onvoiceschanged=pickVoice;
+  }
+}catch(e){}
+function say(text){
+  try{
+    if(!('speechSynthesis' in window)) return;
+    if(!voiceReady) pickVoice();
+    window.speechSynthesis.cancel();
+    const u=new SpeechSynthesisUtterance(text);
+    if(monkeyVoice) u.voice=monkeyVoice;
+    u.lang=(monkeyVoice&&monkeyVoice.lang)||'en-IN';
+    u.pitch=1.6; u.rate=0.95; u.volume=1;
+    window.speechSynthesis.speak(u);
+  }catch(e){}
+}
+let sayTimer=null;
+function speakSoon(text,delay){
+  if(sayTimer){ clearTimeout(sayTimer); sayTimer=null; }
+  sayTimer=setTimeout(()=>{ sayTimer=null; say(text); },delay);
+}
+function stopTalking(){
+  if(sayTimer){ clearTimeout(sayTimer); sayTimer=null; }
+  try{ if('speechSynthesis' in window) window.speechSynthesis.cancel(); }catch(e){}
+}
+function monkeyWrongSound(){ laughSound(); speakSoon(MONKEY_WRONG,430); }
+function monkeyRightSound(){ cheerSound(); speakSoon(MONKEY_RIGHT,280); }
+
+/* --- phones only allow sound after the first tap: wake it up then --- */
+let primed=false;
+function primeVoice(){
+  if(primed) return; primed=true;
+  audioCtx();
+  try{
+    if('speechSynthesis' in window){
+      const u=new SpeechSynthesisUtterance(' ');
+      u.volume=0; window.speechSynthesis.speak(u);
+    }
+  }catch(e){}
+}
+document.addEventListener('touchstart',primeVoice,{passive:true});
+document.addEventListener('click',primeVoice);
+
+/* =========================================================
    ARTWORK — the jungle cast
    ========================================================= */
 function crownArt(kind){
@@ -640,7 +731,7 @@ function show(w){
   m.style.display = w==='menu' ? (window.innerWidth>=760?'grid':'block') : 'none';
   document.getElementById('play').style.display  = w==='play' ?'block':'none';
   document.getElementById('score').style.display = w==='score'?'block':'none';
-  closeModal(); window.scrollTo(0,0);
+  stopTalking(); closeModal(); window.scrollTo(0,0);
 }
 function goMenu(){ renderMenu(); show('menu'); }
 
@@ -772,6 +863,7 @@ function renderMake(){
 
 /* ---- feedback ---- */
 function markRight(extra,hindi){
+  monkeyRightSound();
   const f=document.getElementById('feedback');
   f.className='feedback good';
   let t=(cur.tries===0?'🍌 Correct! One banana from '+mName()+'!':'🍌 Correct! He was wrong again!');
@@ -785,6 +877,7 @@ function markRight(extra,hindi){
   b.textContent=(cur.i===cur.qs.length-1)?'Finish level ▶':'Next ▶';
 }
 function markWrong(q){
+  monkeyWrongSound();
   cur.tries++;
   const f=document.getElementById('feedback');
   f.className='feedback again';
